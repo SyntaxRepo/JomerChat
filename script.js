@@ -25,17 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let abortController = null;
 
     const availableModels = [
-        'z-ai/glm-4.6', 
-        'anthropic/claude-sonnet-4.5', 
-        'google/gemini-2.5-flash-lite-preview-09-2025', 
-        'openai/gpt-5-nano', 
-        'openai/chatgpt-4o-latest', 
-        'openai/gpt-5',
-        'deepseek/deepseek-chat-v3.1',
+        'deepseek/deepseek-chat-v3.1:free', 
+        'alibaba/tongyi-deepresearch-30b-a3b:free', 
+        'openai/gpt-oss-20b:free', 
+        'qwen/qwen3-coder:free', 
+        'google/gemma-3n-e2b-it:free', 
+        'deepseek/deepseek-r1-0528-qwen3-8b:free',
+        'mistralai/mistral-small-3.2-24b-instruct:free',
+        'qwen/qwen3-30b-a3b:free', 
+        'deepseek/deepseek-r1-0528:free', 
         'deepseek/deepseek-chat-v3-0324:free', 
-        'google/gemini-2.5-pro', 
-        'google/gemini-2.5-flash-lite', 
-        'google/gemma-2-9b-it'
+        'google/gemini-2.0-flash-exp:free'
+        'qwen/qwen-2.5-coder-32b-instruct:free'
     ];
     let selectedModel = availableModels[0];
 
