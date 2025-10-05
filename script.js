@@ -96,23 +96,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Chat History Logic ---
     function saveChats() { localStorage.setItem('jomer-chats', JSON.stringify(chats)); }
     
-    // --- FIX: Robust chat loading ---
+    /* --- FIX #1: ROBUST CHAT LOADING --- */
     function loadChats() {
         const savedChats = localStorage.getItem('jomer-chats');
         if (savedChats) {
             try {
-                chats = JSON.parse(savedChats);
-                // Ensure chats is always an array
-                if (!Array.isArray(chats)) {
-                    chats = [];
+                const parsedChats = JSON.parse(savedChats);
+                // Ensure the loaded data is actually an array
+                if (Array.isArray(parsedChats)) {
+                    chats = parsedChats;
+                } else {
+                    chats = []; // If not an array, start fresh to prevent errors
                 }
                 if (chats.length > 0) {
                     activeChatId = chats[0].id;
                 }
             } catch (error) {
-                console.error("Failed to parse chats from localStorage:", error);
-                // If parsing fails, reset to an empty array to prevent further issues
-                // but we don't save, so the corrupted data can be inspected later.
+                console.error("Failed to parse chats from localStorage, starting fresh.", error);
+                // If JSON is corrupted, reset to an empty state to prevent app crash
                 chats = [];
                 activeChatId = null;
             }
