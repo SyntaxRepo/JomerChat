@@ -1,4 +1,4 @@
-// script.js (Updated to use the secure /api/proxy endpoint)
+// script.js (Final corrected logic for conditional bubbles)
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Element Selections ---
@@ -230,6 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageTextContainer = document.createElement('div');
             messageTextContainer.className = 'message-text';
             
+            // --- NEW, SIMPLIFIED LOGIC START ---
+
             const createPlainText = (text, container) => {
                 const trimmedText = text.trim();
                 if (!trimmedText) return;
@@ -309,6 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const [fullMatch, language, code] = match;
                     createCodeBubble(language, code, messageTextContainer);
                 } else {
+                    // This is the new, simpler, more robust rule:
+                    // If the text block contains ANY newline, it's complex. Put it in a bubble.
                     if (trimmedPart.includes('\n')) {
                         createTextBubble(trimmedPart, messageTextContainer);
                     } else {
@@ -316,6 +320,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
+
+            // --- NEW, SIMPLIFIED LOGIC END ---
 
             messageContentWrapper.appendChild(modelNameHeader);
             messageContentWrapper.appendChild(messageTextContainer);
@@ -425,12 +431,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let isFirstToken = true;
         
         try {
-            // --- MODIFICATION: Updated fetch call to use the proxy ---
             const response = await fetch('/api/proxy', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // The API key is now handled by the serverless function, so we remove it from here.
                 },
                 body: JSON.stringify({
                     model: selectedModel,
@@ -439,7 +443,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }),
                 signal: abortController.signal
             });
-            // --- END MODIFICATION ---
 
             if (!response.ok) {
                 throw new Error(`API error (${response.status}): ${response.statusText}`);
