@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const welcomeMessageHTML = `
         <div class="welcome-message">
-            <h1>Good morning, Syntax jojohn</h1>
+            <h1>Maayong Adlaw Kanimo Diha Badi</h1>
         </div>`;
     
     function resetInputUI() {
