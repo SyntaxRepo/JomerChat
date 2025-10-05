@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageTextContainer = document.createElement('div');
             messageTextContainer.className = 'message-text';
             
-            // --- NEW, SIMPLIFIED LOGIC START ---
+            // --- REFINED LOGIC START ---
 
             const createPlainText = (text, container) => {
                 const trimmedText = text.trim();
@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // --- NEW, SIMPLIFIED LOGIC END ---
+            // --- REFINED LOGIC END ---
 
             messageContentWrapper.appendChild(modelNameHeader);
             messageContentWrapper.appendChild(messageTextContainer);
