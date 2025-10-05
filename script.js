@@ -1,5 +1,3 @@
-// script.js (Final, Strict Logic: Bubbles for PURE CODE ONLY)
-
 document.addEventListener('DOMContentLoaded', () => {
     // --- Element Selections ---
     const sidebar = document.getElementById('sidebar');
@@ -25,60 +23,63 @@ document.addEventListener('DOMContentLoaded', () => {
     let abortController = null;
 
     const availableModels = [
-'alibaba/tongyi-deepresearch-30b-a3b:free', 
-'mistralai/mistral-small-3.2-24b-instruct:free',
-'meta-llama/llama-3.3-8b-instruct:free',
-'google/gemini-2.0-flash-exp:free',
-'nousresearch/deephermes-3-llama-3-8b-preview:free',
-'mistralai/mistral-small-3.1-24b-instruct:free',
-'openai/gpt-oss-20b:free',
-'nvidia/nemotron-nano-9b-v2:free',
-'moonshotai/kimi-dev-72b:free',
-'deepseek/deepseek-r1-0528-qwen3-8b:free',
-'mistralai/mistral-small-24b-instruct-2501:free',
-'qwen/qwen3-14b:free',
-'qwen/qwen3-8b:free',
-'qwen/qwen3-4b:free',
-'meta-llama/llama-4-scout:free',
-'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
-'meta-llama/llama-4-maverick:free',
-'qwen/qwen3-30b-a3b:free',
-'meituan/longcat-flash-chat:free',
-'microsoft/mai-ds-r1:free',
-'qwen/qwen3-coder:free',
-'qwen/qwen-2.5-coder-32b-instruct:free',
-'qwen/qwen2.5-vl-32b-instruct:free',
-'tngtech/deepseek-r1t-chimera:free',
-'deepseek/deepseek-r1-0528:free',
-'mistralai/mistral-7b-instruct:free',
-'qwen/qwen-2.5-72b-instruct:free',
-'mistralai/devstral-small-2505:free',
-'tngtech/deepseek-r1t2-chimera:free',
-'mistralai/mistral-nemo:free',
-'deepseek/deepseek-r1-distill-llama-70b:free',
-'cognitivecomputations/dolphin3.0-mistral-24b:free',
-'google/gemma-3-27b-it:free',
-'deepseek/deepseek-chat-v3-0324:free',
-'meta-llama/llama-3.3-70b-instruct:free',
-'moonshotai/kimi-k2:free',
-'deepseek/deepseek-chat-v3.1:free',
-'google/gemma-2-9b-it:free',
-'google/gemma-3n-e2b-it:free',
-'google/gemma-3n-e4b-it:free',
-'qwen/qwen3-235b-a22b:free',
-'qwen/qwen2.5-vl-72b-instruct:free',
-'arliai/qwq-32b-arliai-rpr-v1:free',
-'deepseek/deepseek-r1:free',
-'z-ai/glm-4.5-air:free',
-'shisa-ai/shisa-v2-llama3.3-70b:free,
-'tencent/hunyuan-a13b-instruct:free',
-'agentica-org/deepcoder-14b-preview:free',
-'moonshotai/kimi-vl-a3b-thinking:free',
-'google/gemma-3-4b-it:free',
-'google/gemma-3-12b-it:free',
-'cognitivecomputations/dolphin3.0-r1-mistral-24b:free',
-'meta-llama/llama-3.2-3b-instruct:free'
-
+        'alibaba/tongyi-deepresearch-30b-a3b:free', 
+        'mistralai/mistral-small-3.2-24b-instruct:free',
+        'meta-llama/llama-3.3-8b-instruct:free',
+        'google/gemini-2.0-flash-exp:free',
+        'nousresearch/deephermes-3-llama-3-8b-preview:free',
+        'mistralai/mistral-small-3.1-24b-instruct:free',
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-nano-9b-v2:free',
+        'moonshotai/kimi-dev-72b:free',
+        'deepseek/deepseek-r1-0528-qwen3-8b:free',
+        'mistralai/mistral-small-24b-instruct-2501:free',
+        'qwen/qwen3-14b:free',
+        'qwen/qwen3-8b:free',
+        'qwen/qwen3-4b:free',
+        'meta-llama/llama-4-scout:free',
+        'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
+        'meta-llama/llama-4-maverick:free',
+        'qwen/qwen3-30b-a3b:free',
+        'meituan/longcat-flash-chat:free',
+        'microsoft/mai-ds-r1:free',
+        'qwen/qwen3-coder:free',
+        'qwen/qwen-2.5-coder-32b-instruct:free',
+        'qwen/qwen2.5-vl-32b-instruct:free',
+        'tngtech/deepseek-r1t-chimera:free',
+        'deepseek/deepseek-r1-0528:free',
+        'mistralai/mistral-7b-instruct:free',
+        'qwen/qwen-2.5-72b-instruct:free',
+        'mistralai/devstral-small-2505:free',
+        'tngtech/deepseek-r1t2-chimera:free',
+        'mistralai/mistral-nemo:free',
+        'deepseek/deepseek-r1-distill-llama-70b:free',
+        'cognitivecomputations/dolphin3.0-mistral-24b:free',
+        'google/gemma-3-27b-it:free',
+        'deepseek/deepseek-chat-v3-0324:free',
+        'meta-llama/llama-3.3-70b-instruct:free',
+        'moonshotai/kimi-k2:free',
+        'deepseek/deepseek-chat-v3.1:free',
+        'google/gemma-2-9b-it:free',
+        'google/gemma-3n-e2b-it:free',
+        'google/gemma-3n-e4b-it:free',
+        'qwen/qwen3-235b-a22b:free',
+        'qwen/qwen2.5-vl-72b-instruct:free',
+        'arliai/qwq-32b-arliai-rpr-v1:free',
+        'deepseek/deepseek-r1:free',
+        'z-ai/glm-4.5-air:free',
+        // --- FIX 1 START ---
+        'shisa-ai/shisa-v2-llama3.3-70b:free',
+        // --- FIX 1 END ---
+        'tencent/hunyuan-a13b-instruct:free',
+        'agentica-org/deepcoder-14b-preview:free',
+        // --- FIX 2 START ---
+        'moonshotai/kimi-vl-a3b-thinking:free',
+        // --- FIX 2 END ---
+        'google/gemma-3-4b-it:free',
+        'google/gemma-3-12b-it:free',
+        'cognitivecomputations/dolphin3.0-r1-mistral-24b:free',
+        'meta-llama/llama-3.2-3b-instruct:free'
     ];
     let selectedModel = availableModels[0];
 
@@ -265,12 +266,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageTextContainer = document.createElement('div');
             messageTextContainer.className = 'message-text';
             
-            // --- NEW, SIMPLIFIED LOGIC START ---
-
             const createPlainText = (text, container) => {
                 const trimmedText = text.trim();
                 if (!trimmedText) return;
-                // Split by newlines to create separate paragraphs for plain text
                 const paragraphs = trimmedText.split('\n');
                 paragraphs.forEach(pText => {
                     if (pText.trim()) {
@@ -303,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pre = document.createElement('pre');
                 const codeEl = document.createElement('code');
                 codeEl.className = `language-${language || 'plaintext'}`;
-                codeEl.textContent = code.trim(); // This uses the pure code
+                codeEl.textContent = code.trim();
                 hljs.highlightElement(codeEl);
                 pre.appendChild(codeEl);
                 codeContainer.appendChild(header);
@@ -311,35 +309,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.appendChild(codeContainer);
             };
 
-            // Split the content by code blocks. The code blocks themselves are captured.
             const parts = content.split(/(```[\s\S]*?```)/g);
 
             parts.forEach(part => {
                 if (!part.trim()) return;
 
-                // If the part is a code block, create a code bubble
                 if (part.startsWith('```') && part.endsWith('```')) {
-                    // Regex to extract language and the pure code from the block
                     const codeBlockRegex = /```(\w+)?\s*([\s\S]*?)```/;
                     const match = part.match(codeBlockRegex);
                     
                     if (match) {
-                        // match[1] is the language (e.g., 'javascript')
-                        // match[2] is the PURE code inside the backticks
                         const language = match[1];
                         const code = match[2];
                         createCodeBubble(language, code, messageTextContainer);
                     } else {
-                        // Fallback for a malformed block, treat as plain text
                         createPlainText(part, messageTextContainer);
                     }
                 } else {
-                    // Otherwise, it's just plain text.
                     createPlainText(part, messageTextContainer);
                 }
             });
-
-            // --- NEW, SIMPLIFIED LOGIC END ---
 
             messageContentWrapper.appendChild(modelNameHeader);
             messageContentWrapper.appendChild(messageTextContainer);
