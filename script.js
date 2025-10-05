@@ -1,4 +1,4 @@
-// script.js (Final, Strict Logic: Bubbles for PURE CODE ONLY)
+// script.js (Final corrected logic for conditional bubbles - Universal & Accurate)
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Element Selections ---
@@ -227,15 +227,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const createPlainText = (text, container) => {
                 const trimmedText = text.trim();
                 if (!trimmedText) return;
-                // Split by newlines to create separate paragraphs for plain text
-                const paragraphs = trimmedText.split('\n');
-                paragraphs.forEach(pText => {
-                    if (pText.trim()) {
-                        const p = document.createElement('p');
-                        p.textContent = pText;
-                        container.appendChild(p);
-                    }
+                const p = document.createElement('p');
+                p.textContent = trimmedText;
+                container.appendChild(p);
+            };
+            
+            const createTextBubble = (text, container) => {
+                const trimmedText = text.trim();
+                if (!trimmedText) return;
+                const bubble = document.createElement('div');
+                bubble.className = 'formatted-content-container';
+                const header = document.createElement('div');
+                header.className = 'content-header';
+                const langTag = document.createElement('span');
+                langTag.className = 'language-tag';
+                langTag.textContent = 'Text';
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-content-btn';
+                copyBtn.title = 'Copy text';
+                copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(trimmedText);
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => copyBtn.innerHTML = '<i class="far fa-copy"></i>', 2000);
                 });
+                header.appendChild(langTag);
+                header.appendChild(copyBtn);
+                const textElement = document.createElement('div');
+                textElement.className = 'content-text';
+                textElement.textContent = trimmedText;
+                bubble.appendChild(header);
+                bubble.appendChild(textElement);
+                container.appendChild(bubble);
             };
 
             const createCodeBubble = (language, code, container) => {
@@ -260,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pre = document.createElement('pre');
                 const codeEl = document.createElement('code');
                 codeEl.className = `language-${language || 'plaintext'}`;
-                codeEl.textContent = code.trim(); // This uses the pure code
+                codeEl.textContent = code.trim();
                 hljs.highlightElement(codeEl);
                 pre.appendChild(codeEl);
                 codeContainer.appendChild(header);
@@ -268,31 +291,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.appendChild(codeContainer);
             };
 
-            // Split the content by code blocks. The code blocks themselves are captured.
             const parts = content.split(/(```[\s\S]*?```)/g);
 
             parts.forEach(part => {
-                if (!part.trim()) return;
+                const trimmedPart = part.trim();
+                if (!trimmedPart) return;
 
-                // If the part is a code block, create a code bubble
-                if (part.startsWith('```') && part.endsWith('```')) {
-                    // Regex to extract language and the pure code from the block
+                if (trimmedPart.startsWith('```') && trimmedPart.endsWith('```')) {
                     const codeBlockRegex = /```(\w+)?\s*([\s\S]*?)```/;
-                    const match = part.match(codeBlockRegex);
-                    
-                    if (match) {
-                        // match[1] is the language (e.g., 'javascript')
-                        // match[2] is the PURE code inside the backticks
-                        const language = match[1];
-                        const code = match[2];
-                        createCodeBubble(language, code, messageTextContainer);
-                    } else {
-                        // Fallback for a malformed block, treat as plain text
-                        createPlainText(part, messageTextContainer);
-                    }
+                    const match = trimmedPart.match(codeBlockRegex);
+                    const [fullMatch, language, code] = match;
+                    createCodeBubble(language, code, messageTextContainer);
                 } else {
-                    // Otherwise, it's just plain text.
-                    createPlainText(part, messageTextContainer);
+                    // This is the new, simpler, more robust rule:
+                    // If the text block contains ANY newline, it's complex. Put it in a bubble.
+                    if (trimmedPart.includes('\n')) {
+                        createTextBubble(trimmedPart, messageTextContainer);
+                    } else {
+                        createPlainText(trimmedPart, messageTextContainer);
+                    }
                 }
             });
 
@@ -357,12 +374,14 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (e) => {
                 displayMessage('user', e.target.result);
                 addMessageToActiveChat('user', e.target.result);
+                // Placeholder for actual image processing
             };
             reader.readAsDataURL(file);
         } else {
             const fileInfo = `[File]${file.name}`;
             displayMessage('user', fileInfo);
             addMessageToActiveChat('user', fileInfo);
+            // Placeholder for actual file processing
         }
         event.target.value = '';
     });
@@ -402,6 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
+                // Try to get a more specific error from the API response body
                 const errorData = await response.json().catch(() => null);
                 const errorMessage = errorData?.error?.message || response.statusText;
                 throw new Error(`API error (${response.status}): ${errorMessage}`);
@@ -431,6 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                                 
                                 fullResponse += token;
+                                // Use textContent for safety during streaming
                                 streamingTextElement.textContent = fullResponse;
                                 chatArea.scrollTop = chatArea.scrollHeight;
                             }
@@ -441,10 +462,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             if (error.name === 'AbortError') {
                 console.log('Stream stopped by user.');
-                if (!fullResponse) {
-                    thinkingBubble.remove();
+                if (!fullResponse) { // If nothing was generated before stopping
+                    thinkingBubble.remove(); // Just remove the thinking bubble
                     resetInputUI();
-                    return;
+                    return; // End the function here
                 }
             } else {
                 console.error('Error sending message to API:', error);
