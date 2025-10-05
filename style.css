@@ -14,7 +14,7 @@
     --danger-color: #ff4d4d;
 }
 
-/* --- NEW: Universal Box Sizing for predictable layouts --- */
+/* --- Universal Box Sizing for predictable layouts --- */
 html {
     box-sizing: border-box;
 }
@@ -31,7 +31,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-color);
-    overflow: hidden;
+    overflow: hidden; /* Prevent body scroll */
 }
 
 .container {
@@ -50,7 +50,7 @@ body {
     flex-direction: column;
     border-right: 1px solid var(--border-color);
     transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, transform 0.3s ease-in-out;
-    flex-shrink: 0;
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
 }
 
 .sidebar-header {
@@ -230,6 +230,7 @@ body {
     font-weight: bold;
 }
 
+/* Collapsed Sidebar State (Desktop) */
 .sidebar-collapsed {
     width: 80px;
     padding: 20px 15px;
@@ -271,12 +272,13 @@ body {
     justify-content: center;
 }
 
+/* Main Chat Area */
 .chat-main {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     background-color: var(--bg-dark);
-    min-width: 0;
+    min-width: 0; /* Important for flexbox to prevent content overflow */
 }
 
 .chat-header {
@@ -286,11 +288,11 @@ body {
     padding: 15px 30px;
     border-bottom: 1px solid var(--border-color);
     background-color: var(--sidebar-bg);
-    flex-shrink: 0;
+    flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .mobile-menu-btn {
-    display: none;
+    display: none; /* Hidden by default */
     background: none;
     border: none;
     color: var(--text-light);
@@ -300,6 +302,7 @@ body {
     margin-right: 15px;
 }
 
+/* Model Selector Styles */
 .model-selector {
     position: relative;
     font-size: 16px;
@@ -361,7 +364,7 @@ body {
 }
 
 .user-profile {
-    margin-left: auto;
+    margin-left: auto; /* Push user profile to the far right */
 }
 
 .user-profile .user-name {
@@ -370,6 +373,7 @@ body {
     font-size: 16px;
 }
 
+/* Chat Area Layout */
 .chat-area {
     flex-grow: 1;
     padding: 20px 0;
@@ -380,7 +384,7 @@ body {
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
-    padding: 0 30px; /* Reduced padding from 30px to 20px on desktop for consistency */
+    padding: 0 30px;
     display: flex;
     flex-direction: column;
 }
@@ -398,13 +402,14 @@ body {
     margin-bottom: 15px;
 }
 
+/* Chat Input Container */
 .chat-input-container {
     padding: 15px 30px;
     border-top: 1px solid var(--border-color);
     background-color: var(--sidebar-bg);
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
+    flex-shrink: 0; /* Prevent input area from shrinking */
 }
 
 .input-wrapper {
@@ -413,8 +418,8 @@ body {
     gap: 10px;
     position: relative;
     width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
+    max-width: 800px; /* Match chat content width */
+    margin: 0 auto; /* Center it */
 }
 
 .add-attachment-btn, .send-btn, .mic-btn {
@@ -512,6 +517,8 @@ body {
     box-shadow: 0 0 0 2px var(--primary-color);
 }
 
+
+/* Chat message styling */
 .user-message, .ai-message {
     margin-bottom: 15px;
     line-height: 1.6;
@@ -525,8 +532,10 @@ body {
     align-self: flex-end;
     padding: 12px 18px;
     border-radius: 18px;
-    word-wrap: break-word;
     max-width: 85%;
+    /* --- FIX: Ensures long text breaks properly --- */
+    overflow-wrap: break-word;
+    word-break: break-all;
 }
 
 .ai-message {
@@ -564,20 +573,22 @@ body {
 }
 
 .message-text {
-    word-wrap: break-word;
     white-space: pre-wrap;
     color: var(--text-light);
     font-size: 15px;
     line-height: 1.6;
+    /* --- FIX: Ensures long text breaks properly --- */
+    overflow-wrap: break-word;
+    word-break: break-all;
 }
 
 .message-text p {
     margin: 0 0 1em 0;
 }
-
 .message-text p:last-child {
     margin-bottom: 0;
 }
+
 
 .user-message img {
     max-width: 100%;
@@ -637,6 +648,8 @@ body {
     transform: scale(0.95);
 }
 
+
+/* Universal Content Formatting Styles */
 .formatted-content-container {
     background-color: var(--user-message-bg);
     border: 1px solid var(--border-color);
@@ -704,6 +717,8 @@ body {
     white-space: pre;
 }
 
+
+/* Scrollbar Styling */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-dark); }
 ::-webkit-scrollbar-thumb {
@@ -713,6 +728,7 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--text-light); }
 
+/* Thinking Indicator */
 .thinking-indicator {
     display: flex;
     align-items: center;
@@ -736,6 +752,8 @@ body {
   40% { transform: scale(1); }
 }
 
+
+/* --- Animations --- */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -755,10 +773,11 @@ body {
 
 /*
 ============================================================
-    RESPONSIVE DESIGN FOR MOBILE & TABLETS (FIXED SPACING)
+    RESPONSIVE DESIGN FOR MOBILE & TABLETS
 ============================================================
 */
 @media (max-width: 768px) {
+    /* Make sidebar an overlay that slides in from the left */
     .sidebar {
         position: fixed;
         left: 0;
@@ -770,19 +789,21 @@ body {
         width: 280px; 
     }
 
+    /* 'open' class is toggled by JavaScript to show the sidebar */
     .sidebar.open {
         transform: translateX(0);
         box-shadow: 5px 0 15px rgba(0,0,0,0.5);
     }
 
+    /* Hide the desktop collapse button and show the mobile one */
     .collapse-btn {
         display: none;
     }
     .mobile-menu-btn {
-        display: block;
+        display: block; /* Show the mobile menu button */
     }
 
-    /* --- FIXED: Reduced padding to prevent content from being cut off --- */
+    /* Reduce padding on main containers to prevent content from being cut off */
     .chat-header, .chat-input-container {
         padding: 10px 15px;
     }
@@ -795,7 +816,7 @@ body {
         max-width: 100%; /* Ensure input wrapper is fluid */
     }
 
-    /* --- FIXED: Adjusted font and spacing for better mobile readability --- */
+    /* Adjust fonts and spacing for better mobile readability */
     .welcome-message h1 {
         font-size: 26px;
         margin-bottom: 10px;
@@ -816,7 +837,7 @@ body {
         text-overflow: ellipsis;
     }
     
-    /* --- FIXED: Reduced padding on message bubbles --- */
+    /* Reduce padding on message bubbles for mobile */
     .user-message {
         padding: 10px 15px;
     }
