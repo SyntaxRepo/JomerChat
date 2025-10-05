@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'qwen/qwen3-30b-a3b:free', 
         'deepseek/deepseek-r1-0528:free', 
         'deepseek/deepseek-chat-v3-0324:free', 
-        'google/gemini-2.0-flash-exp:free'
+        'google/gemini-2.0-flash-exp:free',
         'qwen/qwen-2.5-coder-32b-instruct:free'
     ];
     let selectedModel = availableModels[0];
