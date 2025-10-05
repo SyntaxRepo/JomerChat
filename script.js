@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 'shisa-ai/shisa-v2-llama3.3-70b:free,
 'tencent/hunyuan-a13b-instruct:free',
 'agentica-org/deepcoder-14b-preview:free',
-'moonshotai/kimi-vl-a3b-thinking:free,
+'moonshotai/kimi-vl-a3b-thinking:free',
 'google/gemma-3-4b-it:free',
 'google/gemma-3-12b-it:free',
 'cognitivecomputations/dolphin3.0-r1-mistral-24b:free',
