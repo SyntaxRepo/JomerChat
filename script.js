@@ -17,31 +17,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentModelName = document.getElementById('current-model-name');
     const modelList = document.getElementById('model-list');
 
+
     // --- State Management ---
     let chats = [];
     let activeChatId = null;
     let abortController = null;
 
-    // --- MODIFIED SECTION: Updated with Cerebras Models ---
+    // --- Using only the specified Cerebras model ---
     const availableModels = [
         'qwen-3-coder-480b',
-        'BTLM-2-7B-Chat',
-        'Mistral-7B-Instruct-v0.2',
-        'Mixtral-8x7B-Instruct-v0.1',
-        'Llama-2-7b-chat',
-        'Llama-2-13b-chat',
-        'Llama-2-70b-chat',
-        'CodeLlama-34b-instruct'
     ];
-    // --- END OF MODIFIED SECTION ---
-
     let selectedModel = availableModels[0];
 
     const welcomeMessageHTML = `
-        <div class="welcome-message">
-            <h1>Maayong Adlaw Kanimo Diha Badi</h1>
-        </div>`;
-    
+    <div class="welcome-message">
+        <h1>Maayong Adlaw Kanimo Diha Badi</h1>
+    </div>`;
+
     function resetInputUI() {
         userInput.disabled = false;
         sendBtn.classList.remove('stop-btn');
@@ -71,11 +63,14 @@ document.addEventListener('DOMContentLoaded', () => {
             li.dataset.model = model;
             modelList.appendChild(li);
         });
-        const savedModel = localStorage.getItem('jomer-chat-model') || selectedModel;
-        updateModel(savedModel);
+        updateModel(selectedModel);
+
         currentModelDisplay.addEventListener('click', () => {
-            modelSelector.classList.toggle('open');
+            if (availableModels.length > 1) {
+                 modelSelector.classList.toggle('open');
+            }
         });
+
         modelList.addEventListener('click', (e) => {
             if (e.target.tagName === 'LI') {
                 updateModel(e.target.dataset.model);
@@ -141,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         } else {
-             chatAreaContent.innerHTML = welcomeMessageHTML;
+            chatAreaContent.innerHTML = welcomeMessageHTML;
         }
     }
 
@@ -193,9 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayMessage(sender, content) {
         const welcome = document.querySelector('.welcome-message');
         if (welcome) welcome.remove();
-
         const messageWrapper = document.createElement('div');
-        
         if (sender === 'user') {
             messageWrapper.classList.add('user-message');
             if (content.startsWith('data:image')) {
@@ -209,17 +202,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } else { // AI Message
             messageWrapper.classList.add('ai-message');
             messageWrapper.innerHTML = `<span class="avatar">J</span>`;
-
             const messageContentWrapper = document.createElement('div');
             messageContentWrapper.className = 'message-content-wrapper';
-
             const modelNameHeader = document.createElement('div');
             modelNameHeader.className = 'model-name-header';
             modelNameHeader.textContent = selectedModel;
-
             const messageTextContainer = document.createElement('div');
             messageTextContainer.className = 'message-text';
-            
             const createPlainText = (text, container) => {
                 const trimmedText = text.trim();
                 if (!trimmedText) return;
@@ -232,7 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             };
-
             const createCodeBubble = (language, code, container) => {
                 const codeContainer = document.createElement('div');
                 codeContainer.className = 'formatted-content-container';
@@ -262,16 +250,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 codeContainer.appendChild(pre);
                 container.appendChild(codeContainer);
             };
-
             const parts = content.split(/(```[\s\S]*?```)/g);
-
             parts.forEach(part => {
                 if (!part.trim()) return;
-
                 if (part.startsWith('```') && part.endsWith('```')) {
                     const codeBlockRegex = /```(\w+)?\s*([\s\S]*?)```/;
                     const match = part.match(codeBlockRegex);
-                    
                     if (match) {
                         const language = match[1];
                         const code = match[2];
@@ -283,10 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     createPlainText(part, messageTextContainer);
                 }
             });
-
             messageContentWrapper.appendChild(modelNameHeader);
             messageContentWrapper.appendChild(messageTextContainer);
-            
             const messageActions = document.createElement('div');
             messageActions.className = 'message-actions';
             const copyMsgBtn = document.createElement('button');
@@ -304,10 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
             messageActions.appendChild(copyMsgBtn);
             messageActions.appendChild(deleteMsgBtn);
             messageContentWrapper.appendChild(messageActions);
-
             messageWrapper.appendChild(messageContentWrapper);
         }
-
         chatAreaContent.appendChild(messageWrapper);
         chatArea.scrollTop = chatArea.scrollHeight;
     }
@@ -319,11 +299,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageWrapper = document.createElement('div');
         messageWrapper.classList.add('ai-message');
         messageWrapper.innerHTML = `<span class="avatar">J</span><div class="message-content-wrapper"><div class="model-name-header">${selectedModel}</div><div class="message-text">${thinkingHTML}</div></div>`;
-        
         chatAreaContent.appendChild(messageWrapper);
         chatArea.scrollTop = chatArea.scrollHeight;
-        
-        return messageWrapper; 
+        return messageWrapper;
     }
 
     // --- File Upload Logic ---
@@ -357,11 +335,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function sendMessage() {
         const message = userInput.value.trim();
         if (!message) return;
-        
+
         addMessageToActiveChat('user', message);
         displayMessage('user', message);
         userInput.value = '';
-
         userInput.disabled = true;
         sendBtn.classList.add('stop-btn');
         sendBtn.innerHTML = '<i class="fas fa-stop"></i>';
@@ -369,10 +346,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const thinkingBubble = displayThinkingMessage();
         const streamingTextElement = thinkingBubble.querySelector('.message-text');
-        
+
         let fullResponse = '';
         let isFirstToken = true;
-        
+
         try {
             const response = await fetch('/api/proxy', {
                 method: 'POST',
@@ -381,15 +358,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({
                     model: selectedModel,
-                    messages: [{ role: 'user', content: message }],
-                    stream: true
+                    messages: [{
+                        "role": "system",
+                        "content": "You are a helpful AI assistant."
+                    }, {
+                        role: 'user',
+                        content: message
+                    }],
+                    stream: true,
+                    temperature: 0.7,
+                    top_p: 0.8,
+                    max_completion_tokens: 40000
                 }),
                 signal: abortController.signal
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => null);
-                const errorMessage = errorData?.error?.message || errorData?.error || response.statusText;
+                const errorMessage = errorData?.error?.message || response.statusText;
                 throw new Error(`API error (${response.status}): ${errorMessage}`);
             }
 
@@ -400,35 +386,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split('\n');
+                const chunk = decoder.decode(value);
+                const token = chunk;
 
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const data = line.substring(6);
-                        if (data.trim() === '[DONE]') break;
-                        try {
-                            const json = JSON.parse(data);
-                            const token = json.choices[0]?.delta?.content || '';
-                            if (token) {
-                                if (isFirstToken) {
-                                    streamingTextElement.innerHTML = ''; // Clear "thinking..." dots
-                                    isFirstToken = false;
-                                }
-                                
-                                fullResponse += token;
-                                // Use textContent for performance and security during streaming
-                                streamingTextElement.textContent = fullResponse;
-                                chatArea.scrollTop = chatArea.scrollHeight;
-                            }
-                        } catch (e) { /* Ignore parsing errors for incomplete JSON chunks */ }
+                if (token) {
+                    if (isFirstToken) {
+                        streamingTextElement.innerHTML = '';
+                        isFirstToken = false;
                     }
+                    fullResponse += token;
+                    streamingTextElement.textContent = fullResponse;
+                    chatArea.scrollTop = chatArea.scrollHeight;
                 }
             }
         } catch (error) {
             if (error.name === 'AbortError') {
                 console.log('Stream stopped by user.');
-                if (!fullResponse) { // If no response was generated at all
+                if (!fullResponse) {
                     thinkingBubble.remove();
                     resetInputUI();
                     return;
@@ -438,9 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 fullResponse = `Sorry, I ran into a problem: ${error.message}`;
             }
         } finally {
-            thinkingBubble.remove(); // Remove the temporary streaming bubble
+            thinkingBubble.remove();
             if (fullResponse) {
-                // Render the final, fully-formatted message
                 displayMessage('ai', fullResponse);
                 addMessageToActiveChat('ai', fullResponse);
             }
@@ -459,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     newChatBtn.addEventListener('click', createNewChat);
-    
+
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey && !userInput.disabled) {
             e.preventDefault();
@@ -467,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-     addAttachmentBtn.addEventListener('click', (event) => {
+    addAttachmentBtn.addEventListener('click', (event) => {
         attachmentMenu.classList.toggle('visible');
         event.stopPropagation();
     });
