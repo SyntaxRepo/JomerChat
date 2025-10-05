@@ -1,7 +1,7 @@
-// script.js (Updated for GitHub Models API)
+// script.js (Final, Strict Logic: Bubbles for PURE CODE ONLY)
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Element Selections (unchanged) ---
+    // --- Element Selections ---
     const sidebar = document.getElementById('sidebar');
     const collapseBtn = document.getElementById('collapse-btn');
     const userInput = document.getElementById('user-input');
@@ -24,13 +24,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeChatId = null;
     let abortController = null;
 
-    // --- MODIFICATION: Updated models for GitHub ---
     const availableModels = [
-        "deepseek/DeepSeek-R1-0528"
-        // You can add more GitHub models here in the future
+        'z-ai/glm-4.6', 
+        'anthropic/claude-sonnet-4.5', 
+        'google/gemini-2.5-flash-lite-preview-09-2025', 
+        'openai/gpt-5-nano', 
+        'openai/chatgpt-4o-latest', 
+        'openai/gpt-5',
+        'deepseek/deepseek-chat-v3.1',
+        'deepseek/deepseek-chat-v3-0324:free', 
+        'google/gemini-2.5-pro', 
+        'google/gemini-2.5-flash-lite', 
+        'google/gemma-2-9b-it'
     ];
     let selectedModel = availableModels[0];
-    // --- END MODIFICATION ---
 
     const welcomeMessageHTML = `
         <div class="welcome-message">
@@ -45,13 +52,16 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.focus();
     }
 
-    // --- All other helper functions remain the same ---
+    // --- Sidebar and Model Selector Logic (unchanged) ---
     function initializeSidebarCollapse() {
         const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
-        if (isCollapsed) { sidebar.classList.add('sidebar-collapsed'); }
+        if (isCollapsed) {
+            sidebar.classList.add('sidebar-collapsed');
+        }
         collapseBtn.addEventListener('click', () => {
             sidebar.classList.toggle('sidebar-collapsed');
-            localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('sidebar-collapsed'));
+            const isNowCollapsed = sidebar.classList.contains('sidebar-collapsed');
+            localStorage.setItem('sidebar-collapsed', isNowCollapsed);
         });
     }
 
@@ -65,7 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const savedModel = localStorage.getItem('jomer-chat-model') || selectedModel;
         updateModel(savedModel);
-        currentModelDisplay.addEventListener('click', () => modelSelector.classList.toggle('open'));
+        currentModelDisplay.addEventListener('click', () => {
+            modelSelector.classList.toggle('open');
+        });
         modelList.addEventListener('click', (e) => {
             if (e.target.tagName === 'LI') {
                 updateModel(e.target.dataset.model);
@@ -85,13 +97,18 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('jomer-chat-model', modelName);
     }
 
-    function saveChats() { localStorage.setItem('jomer-chats', JSON.stringify(chats)); }
+    // --- Chat History Logic (unchanged) ---
+    function saveChats() {
+        localStorage.setItem('jomer-chats', JSON.stringify(chats));
+    }
 
     function loadChats() {
         const savedChats = localStorage.getItem('jomer-chats');
         if (savedChats) {
             chats = JSON.parse(savedChats);
-            if (chats.length > 0) { activeChatId = chats[0].id; }
+            if (chats.length > 0) {
+                activeChatId = chats[0].id;
+            }
         }
     }
 
@@ -121,7 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeChat = chats.find(c => c.id === activeChatId);
         if (activeChat && activeChat.messages.length > 0) {
             activeChat.messages.forEach(msg => {
-                if (msg.content !== 'thinking') { displayMessage(msg.sender, msg.content); }
+                if (msg.content !== 'thinking') {
+                    displayMessage(msg.sender, msg.content);
+                }
             });
         } else {
              chatAreaContent.innerHTML = welcomeMessageHTML;
@@ -172,10 +191,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Message and UI Functions ---
     function displayMessage(sender, content) {
         const welcome = document.querySelector('.welcome-message');
         if (welcome) welcome.remove();
+
         const messageWrapper = document.createElement('div');
+        
         if (sender === 'user') {
             messageWrapper.classList.add('user-message');
             if (content.startsWith('data:image')) {
@@ -186,23 +208,36 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 messageWrapper.textContent = content;
             }
-        } else {
+        } else { // AI Message
             messageWrapper.classList.add('ai-message');
             messageWrapper.innerHTML = `<span class="avatar">J</span>`;
+
             const messageContentWrapper = document.createElement('div');
             messageContentWrapper.className = 'message-content-wrapper';
+
             const modelNameHeader = document.createElement('div');
             modelNameHeader.className = 'model-name-header';
             modelNameHeader.textContent = selectedModel;
+
             const messageTextContainer = document.createElement('div');
             messageTextContainer.className = 'message-text';
+            
+            // --- NEW, SIMPLIFIED LOGIC START ---
+
             const createPlainText = (text, container) => {
                 const trimmedText = text.trim();
                 if (!trimmedText) return;
-                const p = document.createElement('p');
-                p.textContent = trimmedText;
-                container.appendChild(p);
+                // Split by newlines to create separate paragraphs for plain text
+                const paragraphs = trimmedText.split('\n');
+                paragraphs.forEach(pText => {
+                    if (pText.trim()) {
+                        const p = document.createElement('p');
+                        p.textContent = pText;
+                        container.appendChild(p);
+                    }
+                });
             };
+
             const createCodeBubble = (language, code, container) => {
                 const codeContainer = document.createElement('div');
                 codeContainer.className = 'formatted-content-container';
@@ -225,48 +260,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pre = document.createElement('pre');
                 const codeEl = document.createElement('code');
                 codeEl.className = `language-${language || 'plaintext'}`;
-                codeEl.textContent = code.trim();
+                codeEl.textContent = code.trim(); // This uses the pure code
                 hljs.highlightElement(codeEl);
                 pre.appendChild(codeEl);
                 codeContainer.appendChild(header);
                 codeContainer.appendChild(pre);
                 container.appendChild(codeContainer);
             };
+
+            // Split the content by code blocks. The code blocks themselves are captured.
             const parts = content.split(/(```[\s\S]*?```)/g);
+
             parts.forEach(part => {
-                const trimmedPart = part.trim();
-                if (!trimmedPart) return;
-                if (trimmedPart.startsWith('```') && trimmedPart.endsWith('```')) {
+                if (!part.trim()) return;
+
+                // If the part is a code block, create a code bubble
+                if (part.startsWith('```') && part.endsWith('```')) {
+                    // Regex to extract language and the pure code from the block
                     const codeBlockRegex = /```(\w+)?\s*([\s\S]*?)```/;
-                    const match = trimmedPart.match(codeBlockRegex);
+                    const match = part.match(codeBlockRegex);
+                    
                     if (match) {
+                        // match[1] is the language (e.g., 'javascript')
+                        // match[2] is the PURE code inside the backticks
                         const language = match[1];
                         const code = match[2];
                         createCodeBubble(language, code, messageTextContainer);
                     } else {
+                        // Fallback for a malformed block, treat as plain text
                         createPlainText(part, messageTextContainer);
                     }
                 } else {
-                    createPlainText(trimmedPart, messageTextContainer);
+                    // Otherwise, it's just plain text.
+                    createPlainText(part, messageTextContainer);
                 }
             });
+
+            // --- NEW, SIMPLIFIED LOGIC END ---
+
             messageContentWrapper.appendChild(modelNameHeader);
             messageContentWrapper.appendChild(messageTextContainer);
+            
             const messageActions = document.createElement('div');
             messageActions.className = 'message-actions';
             const copyMsgBtn = document.createElement('button');
             copyMsgBtn.className = 'action-btn';
             copyMsgBtn.innerHTML = '<i class="fas fa-copy"></i>';
-            copyMsgBtn.addEventListener('click', () => navigator.clipboard.writeText(content));
+            copyMsgBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(content);
+            });
             const deleteMsgBtn = document.createElement('button');
             deleteMsgBtn.className = 'action-btn';
             deleteMsgBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-            deleteMsgBtn.addEventListener('click', () => messageWrapper.remove());
+            deleteMsgBtn.addEventListener('click', () => {
+                messageWrapper.remove();
+            });
             messageActions.appendChild(copyMsgBtn);
             messageActions.appendChild(deleteMsgBtn);
             messageContentWrapper.appendChild(messageActions);
+
             messageWrapper.appendChild(messageContentWrapper);
         }
+
         chatAreaContent.appendChild(messageWrapper);
         chatArea.scrollTop = chatArea.scrollHeight;
     }
@@ -278,11 +333,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageWrapper = document.createElement('div');
         messageWrapper.classList.add('ai-message');
         messageWrapper.innerHTML = `<span class="avatar">J</span><div class="message-content-wrapper"><div class="model-name-header">${selectedModel}</div><div class="message-text">${thinkingHTML}</div></div>`;
+        
         chatAreaContent.appendChild(messageWrapper);
         chatArea.scrollTop = chatArea.scrollHeight;
+        
         return messageWrapper; 
     }
 
+    // --- File Upload Logic (unchanged) ---
     attachmentButtons.forEach(button => {
         button.addEventListener('click', () => {
             fileUploadInput.accept = button.dataset.type === 'image' ? 'image/*' : '*/*';
@@ -308,8 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         event.target.value = '';
     });
-    
-    // --- Main Send Function ---
+
+    // --- Main Send Function and Event Listeners ---
     async function sendMessage() {
         const message = userInput.value.trim();
         if (!message) return;
@@ -332,7 +390,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/api/proxy', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
                     model: selectedModel,
                     messages: [{ role: 'user', content: message }],
@@ -343,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => null);
-                const errorMessage = errorData?.error?.details || errorData?.error || response.statusText;
+                const errorMessage = errorData?.error?.message || response.statusText;
                 throw new Error(`API error (${response.status}): ${errorMessage}`);
             }
 
@@ -358,14 +418,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const lines = chunk.split('\n');
 
                 for (const line of lines) {
-                    // --- MODIFICATION: Updated for GitHub stream format ---
                     if (line.startsWith('data: ')) {
                         const data = line.substring(6);
                         if (data.trim() === '[DONE]') break;
                         try {
                             const json = JSON.parse(data);
-                            // GitHub's format is simpler: json.token
-                            const token = json.token || '';
+                            const token = json.choices[0]?.delta?.content || '';
                             if (token) {
                                 if (isFirstToken) {
                                     streamingTextElement.innerHTML = '';
@@ -378,7 +436,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         } catch (e) { /* Ignore parsing errors */ }
                     }
-                    // --- END MODIFICATION ---
                 }
             }
         } catch (error) {
@@ -402,25 +459,32 @@ document.addEventListener('DOMContentLoaded', () => {
             resetInputUI();
         }
     }
-    
+
     sendBtn.addEventListener('click', () => {
         if (sendBtn.classList.contains('stop-btn')) {
-            if (abortController) { abortController.abort(); }
+            if (abortController) {
+                abortController.abort();
+            }
         } else {
             sendMessage();
         }
     });
+
     newChatBtn.addEventListener('click', createNewChat);
+    
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey && !userInput.disabled) {
             e.preventDefault();
             sendMessage();
         }
     });
-    addAttachmentBtn.addEventListener('click', (event) => {
+
+     addAttachmentBtn.addEventListener('click', (event) => {
         attachmentMenu.classList.toggle('visible');
         event.stopPropagation();
     });
+
+    // --- Initial Load ---
     function initialize() {
         loadChats();
         initializeModelSelector();
@@ -428,5 +492,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderChatHistory();
         renderActiveChat();
     }
+
     initialize();
 });
