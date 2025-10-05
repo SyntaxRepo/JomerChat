@@ -8,6 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatAreaContent = document.getElementById('chat-area-content');
     const newChatBtn = document.getElementById('new-chat-btn');
     const chatList = document.getElementById('chat-list');
+    const addAttachmentBtn = document.getElementById('add-attachment-btn');
+    const attachmentMenu = document.getElementById('attachment-menu');
+    const attachmentButtons = document.querySelectorAll('.attachment-menu button');
+    const fileUploadInput = document.getElementById('file-upload-input');
     const modelSelector = document.getElementById('model-selector');
     const currentModelDisplay = document.getElementById('current-model-display');
     const currentModelName = document.getElementById('current-model-name');
@@ -18,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeChatId = null;
     let abortController = null;
 
-    // --- AVAILABLE MODELS: Now an array of objects with model-specific parameters ---
     const availableModels = [
         { 
             name: 'qwen-3-coder-480b',
@@ -71,17 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
         availableModels.forEach(model => {
             const li = document.createElement('li');
             li.textContent = model.name;
-            li.dataset.modelName = model.name; // Use a data attribute for the name
+            li.dataset.modelName = model.name;
             modelList.appendChild(li);
         });
-
         const savedModelName = localStorage.getItem('jomer-chat-model') || selectedModel.name;
         updateModel(savedModelName);
-
-        currentModelDisplay.addEventListener('click', () => {
-            modelSelector.classList.toggle('open');
-        });
-
+        currentModelDisplay.addEventListener('click', () => modelSelector.classList.toggle('open'));
         modelList.addEventListener('click', (e) => {
             if (e.target.tagName === 'LI') {
                 updateModel(e.target.dataset.modelName);
@@ -89,9 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         document.addEventListener('click', (e) => {
-            if (!modelSelector.contains(e.target)) {
-                modelSelector.classList.remove('open');
-            }
+            if (!modelSelector.contains(e.target)) modelSelector.classList.remove('open');
         });
     }
 
@@ -102,10 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('jomer-chat-model', selectedModel.name);
     }
 
-    // --- Chat History Logic (No changes) ---
-    function saveChats() {
-        localStorage.setItem('jomer-chats', JSON.stringify(chats));
-    }
+    // --- Chat History Logic ---
+    function saveChats() { localStorage.setItem('jomer-chats', JSON.stringify(chats)); }
     function loadChats() {
         const savedChats = localStorage.getItem('jomer-chats');
         if (savedChats) {
@@ -121,9 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             li.className = `chat-item ${chat.id === activeChatId ? 'active' : ''}`;
             li.dataset.id = chat.id;
             li.innerHTML = `<span class="chat-item-title">${chat.title}</span><button class="chat-item-delete"><i class="fas fa-trash-alt"></i></button>`;
-            li.addEventListener('click', (e) => {
-                if (!e.target.closest('.chat-item-delete')) switchChat(chat.id);
-            });
+            li.addEventListener('click', (e) => { if (!e.target.closest('.chat-item-delete')) switchChat(chat.id); });
             li.querySelector('.chat-item-delete').addEventListener('click', () => deleteChat(chat.id));
             chatList.appendChild(li);
         });
@@ -136,9 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const activeChat = chats.find(c => c.id === activeChatId);
         if (activeChat && activeChat.messages.length > 0) {
-            activeChat.messages.forEach(msg => {
-                if (msg.content !== 'thinking') displayMessage(msg.sender, msg.content);
-            });
+            activeChat.messages.forEach(msg => { if (msg.content !== 'thinking') displayMessage(msg.sender, msg.content); });
         } else {
             chatAreaContent.innerHTML = welcomeMessageHTML;
         }
@@ -183,20 +173,104 @@ document.addEventListener('DOMContentLoaded', () => {
             saveChats();
         }
     }
-    // --- Message and UI Functions (Simplified for brevity, your original detailed code is fine) ---
+
+    // --- Message and UI Functions (FIXED) ---
     function displayMessage(sender, content) {
         const welcome = document.querySelector('.welcome-message');
         if (welcome) welcome.remove();
+
         const messageWrapper = document.createElement('div');
-        messageWrapper.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
-        if (sender === 'ai') {
-            messageWrapper.innerHTML = `<span class="avatar">J</span><div class="message-content-wrapper"><div class="model-name-header">${selectedModel.name}</div><div class="message-text"><p>${content}</p></div></div>`;
-        } else {
-            messageWrapper.textContent = content;
+        if (sender === 'user') {
+            messageWrapper.classList.add('user-message');
+            // This part handles display for user's text, images, and files
+            if (content.startsWith('data:image')) {
+                messageWrapper.innerHTML = `<img src="${content}" alt="Uploaded Image">`;
+            } else if (content.startsWith('[File]')) {
+                const fileName = content.substring(7);
+                messageWrapper.innerHTML = `<div class="file-preview"><i class="fas fa-file-alt"></i><span>${fileName}</span></div>`;
+            } else {
+                messageWrapper.textContent = content;
+            }
+        } else { // AI Message
+            messageWrapper.classList.add('ai-message');
+            messageWrapper.innerHTML = `<span class="avatar">J</span>`;
+            const messageContentWrapper = document.createElement('div');
+            messageContentWrapper.className = 'message-content-wrapper';
+
+            const modelNameHeader = document.createElement('div');
+            modelNameHeader.className = 'model-name-header';
+            modelNameHeader.textContent = selectedModel.name;
+
+            const messageTextContainer = document.createElement('div');
+            messageTextContainer.className = 'message-text';
+
+            const createPlainText = (text, container) => {
+                const trimmedText = text.trim();
+                if (!trimmedText) return;
+                trimmedText.split('\n').forEach(pText => {
+                    if (pText.trim()) {
+                        const p = document.createElement('p');
+                        p.textContent = pText;
+                        container.appendChild(p);
+                    }
+                });
+            };
+
+            const createCodeBubble = (language, code, container) => {
+                const codeContainer = document.createElement('div');
+                codeContainer.className = 'formatted-content-container';
+                const header = document.createElement('div');
+                header.className = 'content-header';
+                const langTag = document.createElement('span');
+                langTag.className = 'language-tag';
+                langTag.textContent = language || 'text';
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-content-btn';
+                copyBtn.title = 'Copy code';
+                copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(code.trim());
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => copyBtn.innerHTML = '<i class="far fa-copy"></i>', 2000);
+                });
+                header.appendChild(langTag);
+                header.appendChild(copyBtn);
+                const pre = document.createElement('pre');
+                const codeEl = document.createElement('code');
+                codeEl.className = `language-${language || 'plaintext'}`;
+                codeEl.textContent = code.trim();
+                hljs.highlightElement(codeEl); // This is where highlight.js does its magic
+                pre.appendChild(codeEl);
+                codeContainer.appendChild(header);
+                codeContainer.appendChild(pre);
+                container.appendChild(codeContainer);
+            };
+            
+            // This logic splits the content by ``` and renders code blocks or plain text
+            content.split(/(```[\s\S]*?```)/g).forEach(part => {
+                if (!part.trim()) return;
+                if (part.startsWith('```') && part.endsWith('```')) {
+                    const match = part.match(/```(\w+)?\s*([\s\S]*?)```/);
+                    if (match) {
+                        const language = match[1];
+                        const code = match[2];
+                        createCodeBubble(language, code, messageTextContainer);
+                    } else {
+                        createPlainText(part, messageTextContainer);
+                    }
+                } else {
+                    createPlainText(part, messageTextContainer);
+                }
+            });
+
+            messageContentWrapper.appendChild(modelNameHeader);
+            messageContentWrapper.appendChild(messageTextContainer);
+            messageWrapper.appendChild(messageContentWrapper);
         }
         chatAreaContent.appendChild(messageWrapper);
         chatArea.scrollTop = chatArea.scrollHeight;
     }
+
     function displayThinkingMessage() {
         const welcome = document.querySelector('.welcome-message');
         if (welcome) welcome.remove();
@@ -208,6 +282,33 @@ document.addEventListener('DOMContentLoaded', () => {
         chatArea.scrollTop = chatArea.scrollHeight;
         return messageWrapper;
     }
+    
+    // --- File Upload Logic ---
+    attachmentButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            fileUploadInput.accept = button.dataset.type === 'image' ? 'image/*' : '*/*';
+            fileUploadInput.click();
+            attachmentMenu.classList.remove('visible');
+        });
+    });
+
+    fileUploadInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                displayMessage('user', e.target.result);
+                addMessageToActiveChat('user', e.target.result);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            const fileInfo = `[File]${file.name}`;
+            displayMessage('user', fileInfo);
+            addMessageToActiveChat('user', fileInfo);
+        }
+        event.target.value = '';
+    });
 
     // --- Main Send Function ---
     async function sendMessage() {
@@ -229,18 +330,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let isFirstToken = true;
 
         try {
-            // --- DYNAMICALLY CREATE THE REQUEST BODY ---
             const requestBody = {
                 model: selectedModel.name,
-                messages: [{
-                    "role": "system",
-                    "content": "You are a helpful AI assistant."
-                }, {
-                    role: 'user',
-                    content: message
-                }],
+                messages: [{ "role": "system", "content": "You are a helpful AI assistant." }, { role: 'user', content: message }],
                 stream: true,
-                ...selectedModel.params // Spread the model-specific parameters
+                ...selectedModel.params
             };
 
             const response = await fetch('/api/proxy', {
@@ -268,19 +362,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         isFirstToken = false;
                     }
                     fullResponse += token;
-                    streamingTextElement.textContent = fullResponse;
+                    // For streaming, we just update the text content. The full render happens at the end.
+                    streamingTextElement.textContent = fullResponse; 
                     chatArea.scrollTop = chatArea.scrollHeight;
                 }
             }
         } catch (error) {
             if (error.name === 'AbortError') {
                 console.log('Stream stopped by user.');
+                if (!fullResponse) thinkingBubble.remove();
             } else {
                 console.error('Error sending message to API:', error);
                 fullResponse = `Sorry, I ran into a problem: ${error.message}`;
             }
         } finally {
-            thinkingBubble.remove();
+            // Remove the temporary "thinking" bubble
+            if (thinkingBubble) thinkingBubble.remove();
+            
+            // Render the final, formatted message
             if (fullResponse) {
                 displayMessage('ai', fullResponse);
                 addMessageToActiveChat('ai', fullResponse);
@@ -290,19 +389,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listeners ---
-    sendBtn.addEventListener('click', () => {
-        if (sendBtn.classList.contains('stop-btn')) {
-            abortController?.abort();
-        } else {
-            sendMessage();
-        }
-    });
+    sendBtn.addEventListener('click', () => { if (sendBtn.classList.contains('stop-btn')) { abortController?.abort(); } else { sendMessage(); } });
     newChatBtn.addEventListener('click', createNewChat);
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey && !userInput.disabled) {
-            e.preventDefault();
-            sendMessage();
-        }
+    userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !userInput.disabled) { e.preventDefault(); sendMessage(); } });
+    addAttachmentBtn.addEventListener('click', (event) => {
+        attachmentMenu.classList.toggle('visible');
+        event.stopPropagation();
     });
 
     // --- Initial Load ---
