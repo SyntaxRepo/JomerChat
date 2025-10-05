@@ -1,4 +1,4 @@
-// script.js (Final corrected logic for conditional bubbles - Universal)
+// script.js (Updated to use the secure /api/proxy endpoint)
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Element Selections ---
@@ -230,8 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageTextContainer = document.createElement('div');
             messageTextContainer.className = 'message-text';
             
-            // --- REFINED LOGIC START ---
-
             const createPlainText = (text, container) => {
                 const trimmedText = text.trim();
                 if (!trimmedText) return;
@@ -311,8 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const [fullMatch, language, code] = match;
                     createCodeBubble(language, code, messageTextContainer);
                 } else {
-                    // This is the new, simpler, more robust rule:
-                    // If the text block contains ANY newline, it's complex. Put it in a bubble.
                     if (trimmedPart.includes('\n')) {
                         createTextBubble(trimmedPart, messageTextContainer);
                     } else {
@@ -320,8 +316,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
-
-            // --- REFINED LOGIC END ---
 
             messageContentWrapper.appendChild(modelNameHeader);
             messageContentWrapper.appendChild(messageTextContainer);
@@ -431,12 +425,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let isFirstToken = true;
         
         try {
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            // --- MODIFICATION: Updated fetch call to use the proxy ---
+            const response = await fetch('/api/proxy', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer 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`,
-                    'HTTP-Referer': `http://localhost`,
+                    // The API key is now handled by the serverless function, so we remove it from here.
                 },
                 body: JSON.stringify({
                     model: selectedModel,
@@ -445,6 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }),
                 signal: abortController.signal
             });
+            // --- END MODIFICATION ---
 
             if (!response.ok) {
                 throw new Error(`API error (${response.status}): ${response.statusText}`);
