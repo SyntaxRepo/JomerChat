@@ -321,6 +321,11 @@ body {
     visibility: hidden;
     transform: translateY(-10px);
     transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+
+    /* --- ADDED THESE TWO LINES FOR SCROLLING --- */
+    max-height: 400px;
+    overflow-y: auto;
+    /* ------------------------------------------- */
 }
 
 .model-selector.open .model-list {
@@ -378,46 +383,11 @@ body {
 
 /* Chat Input Container */
 .chat-input-container {
-    padding: 20px 30px;
+    padding: 15px 30px; /* Reduced padding after removing tool-options */
     border-top: 1px solid var(--border-color);
     background-color: var(--sidebar-bg);
     display: flex;
     flex-direction: column;
-    gap: 15px;
-}
-
-.tool-options-bar {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.tool-btn {
-    background-color: var(--button-bg);
-    color: var(--text-light);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 8px 15px;
-    font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
-}
-
-.tool-btn:hover {
-    background-color: var(--button-hover-bg);
-    color: var(--primary-color);
-}
-
-.tool-btn:active {
-    transform: scale(0.95);
-}
-
-.tool-btn i {
-    color: var(--primary-color);
 }
 
 .input-wrapper {
@@ -451,6 +421,14 @@ body {
 
 .add-attachment-btn:active, .send-btn:active, .mic-btn:active {
     transform: scale(0.9);
+}
+
+/* Style for the stop button */
+.send-btn.stop-btn {
+    background-color: var(--danger-color);
+}
+.send-btn.stop-btn:hover {
+    background-color: #ff6666;
 }
 
 .attachment-menu {
@@ -571,15 +549,23 @@ body {
     margin-bottom: 5px;
 }
 
-/* --- KEY CHANGE HERE --- */
-/* This rule applies to the container for both simple text and bubbles */
 .message-text {
     word-wrap: break-word;
-    white-space: pre-wrap; /* This ensures newlines are respected in simple text too */
+    white-space: pre-wrap;
     color: var(--text-light);
     font-size: 15px;
     line-height: 1.6;
 }
+
+/* Style for individual paragraphs within plain text */
+.message-text p {
+    margin: 0 0 1em 0; /* Add some space between paragraphs */
+}
+
+.message-text p:last-child {
+    margin-bottom: 0; /* Remove space after the last paragraph */
+}
+
 
 .user-message img {
     max-width: 100%;
