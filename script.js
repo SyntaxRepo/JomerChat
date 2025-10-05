@@ -17,6 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentModelName = document.getElementById('current-model-name');
     const modelList = document.getElementById('model-list');
 
+    // --- NEW: Selectors for Mobile Menu ---
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const chatMain = document.querySelector('.chat-main');
+
+
     // --- State Management ---
     let chats = [];
     let activeChatId = null;
@@ -66,6 +71,21 @@ document.addEventListener('DOMContentLoaded', () => {
         collapseBtn.addEventListener('click', () => {
             sidebar.classList.toggle('sidebar-collapsed');
             localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('sidebar-collapsed'));
+        });
+    }
+
+    // --- NEW: Mobile Sidebar Logic ---
+    function initializeMobileSidebar() {
+        mobileMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent the main area click listener from firing immediately
+            sidebar.classList.toggle('open');
+        });
+
+        // Close sidebar when clicking on the main content area
+        chatMain.addEventListener('click', () => {
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
         });
     }
 
@@ -137,6 +157,10 @@ document.addEventListener('DOMContentLoaded', () => {
         activeChatId = chatId;
         renderChatHistory();
         renderActiveChat();
+        // ADDED: Close sidebar on mobile after selecting a chat for better UX
+        if (sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+        }
     }
     function createNewChat() {
         const newChat = { id: Date.now(), title: 'New Chat', messages: [] };
@@ -145,6 +169,10 @@ document.addEventListener('DOMContentLoaded', () => {
         saveChats();
         renderChatHistory();
         renderActiveChat();
+        // ADDED: Close sidebar on mobile after creating a new chat
+        if (sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+        }
     }
     function deleteChat(chatId) {
         chats = chats.filter(c => c.id !== chatId);
@@ -182,7 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageWrapper = document.createElement('div');
         if (sender === 'user') {
             messageWrapper.classList.add('user-message');
-            // This part handles display for user's text, images, and files
             if (content.startsWith('data:image')) {
                 messageWrapper.innerHTML = `<img src="${content}" alt="Uploaded Image">`;
             } else if (content.startsWith('[File]')) {
@@ -203,63 +230,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const messageTextContainer = document.createElement('div');
             messageTextContainer.className = 'message-text';
-
-            const createPlainText = (text, container) => {
-                const trimmedText = text.trim();
-                if (!trimmedText) return;
-                trimmedText.split('\n').forEach(pText => {
-                    if (pText.trim()) {
-                        const p = document.createElement('p');
-                        p.textContent = pText;
-                        container.appendChild(p);
-                    }
-                });
-            };
-
-            const createCodeBubble = (language, code, container) => {
-                const codeContainer = document.createElement('div');
-                codeContainer.className = 'formatted-content-container';
-                const header = document.createElement('div');
-                header.className = 'content-header';
-                const langTag = document.createElement('span');
-                langTag.className = 'language-tag';
-                langTag.textContent = language || 'text';
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'copy-content-btn';
-                copyBtn.title = 'Copy code';
-                copyBtn.innerHTML = '<i class="far fa-copy"></i>';
-                copyBtn.addEventListener('click', () => {
-                    navigator.clipboard.writeText(code.trim());
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-                    setTimeout(() => copyBtn.innerHTML = '<i class="far fa-copy"></i>', 2000);
-                });
-                header.appendChild(langTag);
-                header.appendChild(copyBtn);
-                const pre = document.createElement('pre');
-                const codeEl = document.createElement('code');
-                codeEl.className = `language-${language || 'plaintext'}`;
-                codeEl.textContent = code.trim();
-                hljs.highlightElement(codeEl); // This is where highlight.js does its magic
-                pre.appendChild(codeEl);
-                codeContainer.appendChild(header);
-                codeContainer.appendChild(pre);
-                container.appendChild(codeContainer);
-            };
             
-            // This logic splits the content by ``` and renders code blocks or plain text
             content.split(/(```[\s\S]*?```)/g).forEach(part => {
                 if (!part.trim()) return;
                 if (part.startsWith('```') && part.endsWith('```')) {
                     const match = part.match(/```(\w+)?\s*([\s\S]*?)```/);
                     if (match) {
-                        const language = match[1];
+                        const language = match[1] || 'text';
                         const code = match[2];
-                        createCodeBubble(language, code, messageTextContainer);
-                    } else {
-                        createPlainText(part, messageTextContainer);
+                        const codeContainer = document.createElement('div');
+                        codeContainer.className = 'formatted-content-container';
+                        const header = document.createElement('div');
+                        header.className = 'content-header';
+                        header.innerHTML = `<span class="language-tag">${language}</span><button class="copy-content-btn" title="Copy code"><i class="far fa-copy"></i></button>`;
+                        header.querySelector('.copy-content-btn').addEventListener('click', (e) => {
+                            navigator.clipboard.writeText(code.trim());
+                            const btn = e.currentTarget;
+                            btn.innerHTML = '<i class="fas fa-check"></i>';
+                            setTimeout(() => btn.innerHTML = '<i class="far fa-copy"></i>', 2000);
+                        });
+                        const pre = document.createElement('pre');
+                        const codeEl = document.createElement('code');
+                        codeEl.className = `language-${language}`;
+                        codeEl.textContent = code.trim();
+                        hljs.highlightElement(codeEl);
+                        pre.appendChild(codeEl);
+                        codeContainer.appendChild(header);
+                        codeContainer.appendChild(pre);
+                        messageTextContainer.appendChild(codeContainer);
                     }
                 } else {
-                    createPlainText(part, messageTextContainer);
+                    const p = document.createElement('p');
+                    p.textContent = part;
+                    messageTextContainer.appendChild(p);
                 }
             });
 
@@ -362,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         isFirstToken = false;
                     }
                     fullResponse += token;
-                    // For streaming, we just update the text content. The full render happens at the end.
                     streamingTextElement.textContent = fullResponse; 
                     chatArea.scrollTop = chatArea.scrollHeight;
                 }
@@ -376,10 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fullResponse = `Sorry, I ran into a problem: ${error.message}`;
             }
         } finally {
-            // Remove the temporary "thinking" bubble
             if (thinkingBubble) thinkingBubble.remove();
-            
-            // Render the final, formatted message
             if (fullResponse) {
                 displayMessage('ai', fullResponse);
                 addMessageToActiveChat('ai', fullResponse);
@@ -402,6 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadChats();
         initializeModelSelector();
         initializeSidebarCollapse();
+        initializeMobileSidebar(); // --- NEW: Call the function to set up mobile listeners
         renderChatHistory();
         renderActiveChat();
     }
