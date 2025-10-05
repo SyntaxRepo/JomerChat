@@ -1,4 +1,4 @@
-// script.js (Final, Strict Logic for Conditional Bubbles)
+// script.js (Final, Strict Logic: Bubbles for PURE CODE ONLY)
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Element Selections ---
@@ -222,43 +222,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageTextContainer = document.createElement('div');
             messageTextContainer.className = 'message-text';
             
-            // --- REFINED LOGIC START ---
+            // --- NEW, SIMPLIFIED LOGIC START ---
 
             const createPlainText = (text, container) => {
                 const trimmedText = text.trim();
                 if (!trimmedText) return;
-                const p = document.createElement('p');
-                p.textContent = trimmedText;
-                container.appendChild(p);
-            };
-            
-            const createTextBubble = (text, container) => {
-                const trimmedText = text.trim();
-                if (!trimmedText) return;
-                const bubble = document.createElement('div');
-                bubble.className = 'formatted-content-container';
-                const header = document.createElement('div');
-                header.className = 'content-header';
-                const langTag = document.createElement('span');
-                langTag.className = 'language-tag';
-                langTag.textContent = 'Text';
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'copy-content-btn';
-                copyBtn.title = 'Copy text';
-                copyBtn.innerHTML = '<i class="far fa-copy"></i>';
-                copyBtn.addEventListener('click', () => {
-                    navigator.clipboard.writeText(trimmedText);
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-                    setTimeout(() => copyBtn.innerHTML = '<i class="far fa-copy"></i>', 2000);
+                // Split by newlines to create separate paragraphs for plain text
+                const paragraphs = trimmedText.split('\n');
+                paragraphs.forEach(pText => {
+                    if (pText.trim()) {
+                        const p = document.createElement('p');
+                        p.textContent = pText;
+                        container.appendChild(p);
+                    }
                 });
-                header.appendChild(langTag);
-                header.appendChild(copyBtn);
-                const textElement = document.createElement('div');
-                textElement.className = 'content-text';
-                textElement.textContent = trimmedText;
-                bubble.appendChild(header);
-                bubble.appendChild(textElement);
-                container.appendChild(bubble);
             };
 
             const createCodeBubble = (language, code, container) => {
@@ -283,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pre = document.createElement('pre');
                 const codeEl = document.createElement('code');
                 codeEl.className = `language-${language || 'plaintext'}`;
-                codeEl.textContent = code.trim();
+                codeEl.textContent = code.trim(); // This uses the pure code
                 hljs.highlightElement(codeEl);
                 pre.appendChild(codeEl);
                 codeContainer.appendChild(header);
@@ -291,29 +268,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.appendChild(codeContainer);
             };
 
+            // Split the content by code blocks. The code blocks themselves are captured.
             const parts = content.split(/(```[\s\S]*?```)/g);
 
             parts.forEach(part => {
-                const trimmedPart = part.trim();
-                if (!trimmedPart) return;
+                if (!part.trim()) return;
 
-                if (trimmedPart.startsWith('```') && trimmedPart.endsWith('```')) {
+                // If the part is a code block, create a code bubble
+                if (part.startsWith('```') && part.endsWith('```')) {
+                    // Regex to extract language and the pure code from the block
                     const codeBlockRegex = /```(\w+)?\s*([\s\S]*?)```/;
-                    const match = trimmedPart.match(codeBlockRegex);
-                    const [fullMatch, language, code] = match;
-                    createCodeBubble(language, code, messageTextContainer);
-                } else {
-                    // This is the new, simpler, more robust rule:
-                    // If the text block contains ANY newline, it's complex. Put it in a bubble.
-                    if (trimmedPart.includes('\n')) {
-                        createTextBubble(trimmedPart, messageTextContainer);
+                    const match = part.match(codeBlockRegex);
+                    
+                    if (match) {
+                        // match[1] is the language (e.g., 'javascript')
+                        // match[2] is the PURE code inside the backticks
+                        const language = match[1];
+                        const code = match[2];
+                        createCodeBubble(language, code, messageTextContainer);
                     } else {
-                        createPlainText(trimmedPart, messageTextContainer);
+                        // Fallback for a malformed block, treat as plain text
+                        createPlainText(part, messageTextContainer);
                     }
+                } else {
+                    // Otherwise, it's just plain text.
+                    createPlainText(part, messageTextContainer);
                 }
             });
 
-            // --- REFINED LOGIC END ---
+            // --- NEW, SIMPLIFIED LOGIC END ---
 
             messageContentWrapper.appendChild(modelNameHeader);
             messageContentWrapper.appendChild(messageTextContainer);
