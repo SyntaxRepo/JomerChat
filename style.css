@@ -14,21 +14,24 @@
     --danger-color: #ff4d4d;
 }
 
+/* FIXED: Ensure html and body take full height for mobile compatibility */
+html, body {
+    height: 100%;
+}
+
 body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-color);
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
+    overflow: hidden; /* Prevent body scroll */
 }
 
 .container {
     display: flex;
     width: 100%;
     height: 100%;
-    animation: fadeIn 0.5s ease-in-out; /* Page load animation */
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 /* Sidebar */
@@ -39,7 +42,8 @@ body {
     display: flex;
     flex-direction: column;
     border-right: 1px solid var(--border-color);
-    transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
+    transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, transform 0.3s ease-in-out;
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
 }
 
 .sidebar-header {
@@ -82,7 +86,7 @@ body {
 }
 
 .collapse-btn:active {
-    transform: scale(0.9); /* Click animation */
+    transform: scale(0.9);
 }
 
 .collapse-btn i {
@@ -154,7 +158,7 @@ body {
 }
 
 .new-chat-btn:active {
-    transform: scale(0.98); /* Click animation */
+    transform: scale(0.98);
 }
 
 .chat-history-section h3 {
@@ -222,14 +226,14 @@ body {
     font-weight: bold;
 }
 
-/* --- Styles for the Collapsed/Minimized Sidebar State --- */
+/* Collapsed Sidebar State (Desktop) */
 .sidebar-collapsed {
     width: 80px;
     padding: 20px 15px;
 }
 
 .sidebar-collapsed .logo-text,
-.sidebar-collapsed .new-chat-btn-text, /* Hides text inside new chat button */
+.sidebar-collapsed .new-chat-btn-text,
 .sidebar-collapsed .chat-item-title,
 .sidebar-collapsed .search-bar input {
     opacity: 0;
@@ -240,7 +244,7 @@ body {
 }
 
 .sidebar-collapsed .chat-history-section {
-    display: none; /* Hides the "All chats" section */
+    display: none;
 }
 
 .sidebar-collapsed .collapse-btn i {
@@ -261,7 +265,7 @@ body {
 }
 
 .sidebar-collapsed .new-chat-btn {
-    justify-content: center; /* Centers the remaining icon */
+    justify-content: center;
 }
 
 /* Main Chat Area */
@@ -270,7 +274,7 @@ body {
     display: flex;
     flex-direction: column;
     background-color: var(--bg-dark);
-    min-width: 0;
+    min-width: 0; /* Important for flexbox to prevent content overflow */
 }
 
 .chat-header {
@@ -280,6 +284,19 @@ body {
     padding: 15px 30px;
     border-bottom: 1px solid var(--border-color);
     background-color: var(--sidebar-bg);
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+/* ADDED: Mobile menu button (hidden on desktop) */
+.mobile-menu-btn {
+    display: none; /* Hidden by default */
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 5px;
+    margin-right: 15px;
 }
 
 /* Model Selector Styles */
@@ -321,11 +338,8 @@ body {
     visibility: hidden;
     transform: translateY(-10px);
     transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
-
-    /* --- ADDED THESE TWO LINES FOR SCROLLING --- */
     max-height: 400px;
     overflow-y: auto;
-    /* ------------------------------------------- */
 }
 
 .model-selector.open .model-list {
@@ -346,13 +360,17 @@ body {
     color: var(--primary-color);
 }
 
+.user-profile {
+    margin-left: auto; /* Push user profile to the far right */
+}
+
 .user-profile .user-name {
     font-weight: bold;
     color: var(--text-light);
     font-size: 16px;
 }
 
-/* --- CHAT AREA LAYOUT --- */
+/* Chat Area Layout */
 .chat-area {
     flex-grow: 1;
     padding: 20px 0;
@@ -383,11 +401,12 @@ body {
 
 /* Chat Input Container */
 .chat-input-container {
-    padding: 15px 30px; /* Reduced padding after removing tool-options */
+    padding: 15px 30px;
     border-top: 1px solid var(--border-color);
     background-color: var(--sidebar-bg);
     display: flex;
     flex-direction: column;
+    flex-shrink: 0; /* Prevent input area from shrinking */
 }
 
 .input-wrapper {
@@ -396,6 +415,8 @@ body {
     gap: 10px;
     position: relative;
     width: 100%;
+    max-width: 800px; /* Match chat content width */
+    margin: 0 auto; /* Center it */
     box-sizing: border-box;
 }
 
@@ -423,7 +444,6 @@ body {
     transform: scale(0.9);
 }
 
-/* Style for the stop button */
 .send-btn.stop-btn {
     background-color: var(--danger-color);
 }
@@ -497,7 +517,7 @@ body {
 }
 
 
-/* --- Chat message styling --- */
+/* Chat message styling */
 .user-message, .ai-message {
     margin-bottom: 15px;
     line-height: 1.6;
@@ -539,7 +559,7 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
-    min-width: 0; /* Fix for flexbox overflow issues */
+    min-width: 0;
 }
 
 .model-name-header {
@@ -557,15 +577,13 @@ body {
     line-height: 1.6;
 }
 
-/* Style for individual paragraphs within plain text */
 .message-text p {
-    margin: 0 0 1em 0; /* Add some space between paragraphs */
+    margin: 0 0 1em 0;
 }
 
 .message-text p:last-child {
-    margin-bottom: 0; /* Remove space after the last paragraph */
+    margin-bottom: 0;
 }
-
 
 .user-message img {
     max-width: 100%;
@@ -732,7 +750,6 @@ body {
 
 
 /* --- Animations --- */
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -746,5 +763,68 @@ body {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+
+/*
+============================================================
+    NEW: RESPONSIVE DESIGN FOR MOBILE & TABLETS
+============================================================
+*/
+@media (max-width: 768px) {
+    /* Make sidebar an overlay that slides in from the left */
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100%;
+        z-index: 1000;
+        transform: translateX(-100%);
+        border-right: 1px solid var(--border-color);
+        /* Make sidebar slightly wider on mobile for better touch experience */
+        width: 280px; 
+    }
+
+    /* 'open' class will be toggled by JavaScript to show the sidebar */
+    .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    }
+
+    /* Hide the desktop collapse button and show the mobile one */
+    .collapse-btn {
+        display: none;
+    }
+    .mobile-menu-btn {
+        display: block; /* Show the mobile menu button */
+    }
+
+    /* Main chat area adjustments */
+    .chat-header, .chat-input-container {
+        padding: 10px 15px; /* Reduce padding on mobile */
+    }
+
+    .chat-area-content {
+        padding: 0 15px; /* Reduce padding */
+    }
+
+    /* Adjust fonts and inputs for smaller screens */
+    .welcome-message h1 {
+        font-size: 28px;
+    }
+    .user-profile .user-name {
+        font-size: 14px;
+    }
+    #user-input {
+        font-size: 15px;
+    }
+    
+    /* Make the model name smaller to fit header */
+    #current-model-name {
+        max-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
