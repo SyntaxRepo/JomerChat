@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const chatMain = document.querySelector('.chat-main');
 
+
     // --- State Management ---
     let chats = [];
     let activeChatId = null;
@@ -94,13 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Chat History Logic ---
     function saveChats() { localStorage.setItem('jomer-chats', JSON.stringify(chats)); }
+    
+    // --- FIX: Robust chat loading ---
     function loadChats() {
         const savedChats = localStorage.getItem('jomer-chats');
         if (savedChats) {
-            chats = JSON.parse(savedChats);
-            if (chats.length > 0) activeChatId = chats[0].id;
+            try {
+                chats = JSON.parse(savedChats);
+                // Ensure chats is always an array
+                if (!Array.isArray(chats)) {
+                    chats = [];
+                }
+                if (chats.length > 0) {
+                    activeChatId = chats[0].id;
+                }
+            } catch (error) {
+                console.error("Failed to parse chats from localStorage:", error);
+                // If parsing fails, reset to an empty array to prevent further issues
+                // but we don't save, so the corrupted data can be inspected later.
+                chats = [];
+                activeChatId = null;
+            }
         }
     }
+    
     function renderChatHistory() {
         chatList.innerHTML = '';
         if (chats.length === 0) return;
@@ -228,9 +246,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         messageTextContainer.appendChild(codeContainer);
                     }
                 } else {
-                    // --- BUG FIX IS HERE ---
-                    // This correctly handles multiple paragraphs in plain text,
-                    // preventing the JavaScript error that was losing your chat history.
                     const trimmedPart = part.trim();
                     if (trimmedPart) {
                         trimmedPart.split('\n').forEach(line => {
@@ -263,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatArea.scrollTop = chatArea.scrollHeight;
         return messageWrapper;
     }
-    
+
     // --- File Upload Logic ---
     attachmentButtons.forEach(button => {
         button.addEventListener('click', () => {
