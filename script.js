@@ -16,11 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentModelDisplay = document.getElementById('current-model-display');
     const currentModelName = document.getElementById('current-model-name');
     const modelList = document.getElementById('model-list');
-
-    // --- NEW: Selectors for Mobile Menu ---
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const chatMain = document.querySelector('.chat-main');
-
 
     // --- State Management ---
     let chats = [];
@@ -28,33 +25,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let abortController = null;
 
     const availableModels = [
-        { 
-            name: 'qwen-3-coder-480b',
-            params: { temperature: 0.7, top_p: 0.8, max_completion_tokens: 40000 }
-        },
-        { 
-            name: 'qwen-3-235b-a22b-thinking-2507',
-            params: { temperature: 0.6, top_p: 0.95, max_completion_tokens: 65536 }
-        },
-        { 
-            name: 'gpt-oss-120b',
-            params: { temperature: 1, top_p: 1, max_completion_tokens: 65536, reasoning_effort: "medium" }
-        },
-        { 
-            name: 'qwen-3-32b',
-            params: { temperature: 0.6, top_p: 0.95, max_completion_tokens: 16382 }
-        },
-        { 
-            name: 'llama-3.3-70b',
-            params: { temperature: 0.2, top_p: 1, max_completion_tokens: 2048 }
-        }
+        { name: 'qwen-3-coder-480b', params: { temperature: 0.7, top_p: 0.8, max_completion_tokens: 40000 } },
+        { name: 'qwen-3-235b-a22b-thinking-2507', params: { temperature: 0.6, top_p: 0.95, max_completion_tokens: 65536 } },
+        { name: 'gpt-oss-120b', params: { temperature: 1, top_p: 1, max_completion_tokens: 65536, reasoning_effort: "medium" } },
+        { name: 'qwen-3-32b', params: { temperature: 0.6, top_p: 0.95, max_completion_tokens: 16382 } },
+        { name: 'llama-3.3-70b', params: { temperature: 0.2, top_p: 1, max_completion_tokens: 2048 } }
     ];
     let selectedModel = availableModels[0];
 
-    const welcomeMessageHTML = `
-    <div class="welcome-message">
-        <h1>Maayong Adlaw Kanimo Diha Badi</h1>
-    </div>`;
+    const welcomeMessageHTML = `<div class="welcome-message"><h1>Maayong Adlaw Kanimo Diha Badi</h1></div>`;
 
     function resetInputUI() {
         userInput.disabled = false;
@@ -74,18 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- NEW: Mobile Sidebar Logic ---
     function initializeMobileSidebar() {
         mobileMenuBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent the main area click listener from firing immediately
+            e.stopPropagation();
             sidebar.classList.toggle('open');
         });
-
-        // Close sidebar when clicking on the main content area
         chatMain.addEventListener('click', () => {
-            if (sidebar.classList.contains('open')) {
-                sidebar.classList.remove('open');
-            }
+            if (sidebar.classList.contains('open')) sidebar.classList.remove('open');
         });
     }
 
@@ -157,10 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         activeChatId = chatId;
         renderChatHistory();
         renderActiveChat();
-        // ADDED: Close sidebar on mobile after selecting a chat for better UX
-        if (sidebar.classList.contains('open')) {
-            sidebar.classList.remove('open');
-        }
+        if (sidebar.classList.contains('open')) sidebar.classList.remove('open');
     }
     function createNewChat() {
         const newChat = { id: Date.now(), title: 'New Chat', messages: [] };
@@ -169,10 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveChats();
         renderChatHistory();
         renderActiveChat();
-        // ADDED: Close sidebar on mobile after creating a new chat
-        if (sidebar.classList.contains('open')) {
-            sidebar.classList.remove('open');
-        }
+        if (sidebar.classList.contains('open')) sidebar.classList.remove('open');
     }
     function deleteChat(chatId) {
         chats = chats.filter(c => c.id !== chatId);
@@ -202,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Message and UI Functions (FIXED) ---
+    // --- Message and UI Functions ---
     function displayMessage(sender, content) {
         const welcome = document.querySelector('.welcome-message');
         if (welcome) welcome.remove();
@@ -230,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const messageTextContainer = document.createElement('div');
             messageTextContainer.className = 'message-text';
-            
+
             content.split(/(```[\s\S]*?```)/g).forEach(part => {
                 if (!part.trim()) return;
                 if (part.startsWith('```') && part.endsWith('```')) {
@@ -260,9 +228,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         messageTextContainer.appendChild(codeContainer);
                     }
                 } else {
-                    const p = document.createElement('p');
-                    p.textContent = part;
-                    messageTextContainer.appendChild(p);
+                    // --- BUG FIX IS HERE ---
+                    // This correctly handles multiple paragraphs in plain text,
+                    // preventing the JavaScript error that was losing your chat history.
+                    const trimmedPart = part.trim();
+                    if (trimmedPart) {
+                        trimmedPart.split('\n').forEach(line => {
+                            if (line.trim()) {
+                                const p = document.createElement('p');
+                                p.textContent = line;
+                                messageTextContainer.appendChild(p);
+                            }
+                        });
+                    }
                 }
             });
 
@@ -336,25 +314,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const requestBody = {
                 model: selectedModel.name,
                 messages: [{ "role": "system", "content": "You are a helpful AI assistant." }, { role: 'user', content: message }],
-                stream: true,
-                ...selectedModel.params
+                stream: true, ...selectedModel.params
             };
-
             const response = await fetch('/api/proxy', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody),
-                signal: abortController.signal
+                body: JSON.stringify(requestBody), signal: abortController.signal
             });
-
             if (!response.ok) {
                 const errorData = await response.json().catch(() => null);
                 throw new Error(`API error (${response.status}): ${errorData?.error?.message || response.statusText}`);
             }
-
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
-
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
@@ -401,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadChats();
         initializeModelSelector();
         initializeSidebarCollapse();
-        initializeMobileSidebar(); // --- NEW: Call the function to set up mobile listeners
+        initializeMobileSidebar();
         renderChatHistory();
         renderActiveChat();
     }
