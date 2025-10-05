@@ -22,65 +22,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeChatId = null;
     let abortController = null;
 
+    // --- MODIFIED SECTION: Updated with Cerebras Models ---
     const availableModels = [
-        'alibaba/tongyi-deepresearch-30b-a3b:free', 
-        'mistralai/mistral-small-3.2-24b-instruct:free',
-        'meta-llama/llama-3.3-8b-instruct:free',
-        'google/gemini-2.0-flash-exp:free',
-        'nousresearch/deephermes-3-llama-3-8b-preview:free',
-        'mistralai/mistral-small-3.1-24b-instruct:free',
-        'openai/gpt-oss-20b:free',
-        'nvidia/nemotron-nano-9b-v2:free',
-        'moonshotai/kimi-dev-72b:free',
-        'deepseek/deepseek-r1-0528-qwen3-8b:free',
-        'mistralai/mistral-small-24b-instruct-2501:free',
-        'qwen/qwen3-14b:free',
-        'qwen/qwen3-8b:free',
-        'qwen/qwen3-4b:free',
-        'meta-llama/llama-4-scout:free',
-        'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
-        'meta-llama/llama-4-maverick:free',
-        'qwen/qwen3-30b-a3b:free',
-        'meituan/longcat-flash-chat:free',
-        'microsoft/mai-ds-r1:free',
-        'qwen/qwen3-coder:free',
-        'qwen/qwen-2.5-coder-32b-instruct:free',
-        'qwen/qwen2.5-vl-32b-instruct:free',
-        'tngtech/deepseek-r1t-chimera:free',
-        'deepseek/deepseek-r1-0528:free',
-        'mistralai/mistral-7b-instruct:free',
-        'qwen/qwen-2.5-72b-instruct:free',
-        'mistralai/devstral-small-2505:free',
-        'tngtech/deepseek-r1t2-chimera:free',
-        'mistralai/mistral-nemo:free',
-        'deepseek/deepseek-r1-distill-llama-70b:free',
-        'cognitivecomputations/dolphin3.0-mistral-24b:free',
-        'google/gemma-3-27b-it:free',
-        'deepseek/deepseek-chat-v3-0324:free',
-        'meta-llama/llama-3.3-70b-instruct:free',
-        'moonshotai/kimi-k2:free',
-        'deepseek/deepseek-chat-v3.1:free',
-        'google/gemma-2-9b-it:free',
-        'google/gemma-3n-e2b-it:free',
-        'google/gemma-3n-e4b-it:free',
-        'qwen/qwen3-235b-a22b:free',
-        'qwen/qwen2.5-vl-72b-instruct:free',
-        'arliai/qwq-32b-arliai-rpr-v1:free',
-        'deepseek/deepseek-r1:free',
-        'z-ai/glm-4.5-air:free',
-        // --- FIX 1 START ---
-        'shisa-ai/shisa-v2-llama3.3-70b:free',
-        // --- FIX 1 END ---
-        'tencent/hunyuan-a13b-instruct:free',
-        'agentica-org/deepcoder-14b-preview:free',
-        // --- FIX 2 START ---
-        'moonshotai/kimi-vl-a3b-thinking:free',
-        // --- FIX 2 END ---
-        'google/gemma-3-4b-it:free',
-        'google/gemma-3-12b-it:free',
-        'cognitivecomputations/dolphin3.0-r1-mistral-24b:free',
-        'meta-llama/llama-3.2-3b-instruct:free'
+        'qwen-3-coder-480b',
+        'BTLM-2-7B-Chat',
+        'Mistral-7B-Instruct-v0.2',
+        'Mixtral-8x7B-Instruct-v0.1',
+        'Llama-2-7b-chat',
+        'Llama-2-13b-chat',
+        'Llama-2-70b-chat',
+        'CodeLlama-34b-instruct'
     ];
+    // --- END OF MODIFIED SECTION ---
+
     let selectedModel = availableModels[0];
 
     const welcomeMessageHTML = `
@@ -96,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.focus();
     }
 
-    // --- Sidebar and Model Selector Logic (unchanged) ---
+    // --- Sidebar and Model Selector Logic ---
     function initializeSidebarCollapse() {
         const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
         if (isCollapsed) {
@@ -141,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('jomer-chat-model', modelName);
     }
 
-    // --- Chat History Logic (unchanged) ---
+    // --- Chat History Logic ---
     function saveChats() {
         localStorage.setItem('jomer-chats', JSON.stringify(chats));
     }
@@ -372,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return messageWrapper; 
     }
 
-    // --- File Upload Logic (unchanged) ---
+    // --- File Upload Logic ---
     attachmentButtons.forEach(button => {
         button.addEventListener('click', () => {
             fileUploadInput.accept = button.dataset.type === 'image' ? 'image/*' : '*/*';
@@ -435,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => null);
-                const errorMessage = errorData?.error?.message || response.statusText;
+                const errorMessage = errorData?.error?.message || errorData?.error || response.statusText;
                 throw new Error(`API error (${response.status}): ${errorMessage}`);
             }
 
@@ -446,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value);
+                const chunk = decoder.decode(value, { stream: true });
                 const lines = chunk.split('\n');
 
                 for (const line of lines) {
@@ -458,22 +412,23 @@ document.addEventListener('DOMContentLoaded', () => {
                             const token = json.choices[0]?.delta?.content || '';
                             if (token) {
                                 if (isFirstToken) {
-                                    streamingTextElement.innerHTML = '';
+                                    streamingTextElement.innerHTML = ''; // Clear "thinking..." dots
                                     isFirstToken = false;
                                 }
                                 
                                 fullResponse += token;
+                                // Use textContent for performance and security during streaming
                                 streamingTextElement.textContent = fullResponse;
                                 chatArea.scrollTop = chatArea.scrollHeight;
                             }
-                        } catch (e) { /* Ignore parsing errors */ }
+                        } catch (e) { /* Ignore parsing errors for incomplete JSON chunks */ }
                     }
                 }
             }
         } catch (error) {
             if (error.name === 'AbortError') {
                 console.log('Stream stopped by user.');
-                if (!fullResponse) {
+                if (!fullResponse) { // If no response was generated at all
                     thinkingBubble.remove();
                     resetInputUI();
                     return;
@@ -483,8 +438,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 fullResponse = `Sorry, I ran into a problem: ${error.message}`;
             }
         } finally {
-            thinkingBubble.remove();
+            thinkingBubble.remove(); // Remove the temporary streaming bubble
             if (fullResponse) {
+                // Render the final, fully-formatted message
                 displayMessage('ai', fullResponse);
                 addMessageToActiveChat('ai', fullResponse);
             }
