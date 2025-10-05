@@ -1,4 +1,4 @@
-/* style.css (Updated) */
+/* style.css (Updated & Fully Responsive) */
 
 :root {
     --bg-dark: #0d0d0d;
@@ -14,7 +14,14 @@
     --danger-color: #ff4d4d;
 }
 
-/* FIXED: Ensure html and body take full height for mobile compatibility */
+/* --- NEW: Universal Box Sizing for predictable layouts --- */
+html {
+    box-sizing: border-box;
+}
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
 html, body {
     height: 100%;
 }
@@ -24,7 +31,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-color);
-    overflow: hidden; /* Prevent body scroll */
+    overflow: hidden;
 }
 
 .container {
@@ -43,7 +50,7 @@ body {
     flex-direction: column;
     border-right: 1px solid var(--border-color);
     transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, transform 0.3s ease-in-out;
-    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    flex-shrink: 0;
 }
 
 .sidebar-header {
@@ -65,7 +72,6 @@ body {
     white-space: nowrap;
 }
 
-/* Collapse Button */
 .collapse-btn {
     background: var(--hover-bg);
     color: var(--text-light);
@@ -107,7 +113,6 @@ body {
     border-radius: 8px;
     color: var(--text-color);
     font-size: 14px;
-    box-sizing: border-box;
     transition: opacity 0.2s ease, width 0.3s ease-in-out, box-shadow 0.2s ease;
 }
 
@@ -149,7 +154,6 @@ body {
     flex-shrink: 0;
     white-space: nowrap;
     overflow: hidden;
-    box-sizing: border-box;
 }
 
 .new-chat-btn:hover {
@@ -226,7 +230,6 @@ body {
     font-weight: bold;
 }
 
-/* Collapsed Sidebar State (Desktop) */
 .sidebar-collapsed {
     width: 80px;
     padding: 20px 15px;
@@ -268,13 +271,12 @@ body {
     justify-content: center;
 }
 
-/* Main Chat Area */
 .chat-main {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     background-color: var(--bg-dark);
-    min-width: 0; /* Important for flexbox to prevent content overflow */
+    min-width: 0;
 }
 
 .chat-header {
@@ -284,12 +286,11 @@ body {
     padding: 15px 30px;
     border-bottom: 1px solid var(--border-color);
     background-color: var(--sidebar-bg);
-    flex-shrink: 0; /* Prevent header from shrinking */
+    flex-shrink: 0;
 }
 
-/* ADDED: Mobile menu button (hidden on desktop) */
 .mobile-menu-btn {
-    display: none; /* Hidden by default */
+    display: none;
     background: none;
     border: none;
     color: var(--text-light);
@@ -299,7 +300,6 @@ body {
     margin-right: 15px;
 }
 
-/* Model Selector Styles */
 .model-selector {
     position: relative;
     font-size: 16px;
@@ -361,7 +361,7 @@ body {
 }
 
 .user-profile {
-    margin-left: auto; /* Push user profile to the far right */
+    margin-left: auto;
 }
 
 .user-profile .user-name {
@@ -370,7 +370,6 @@ body {
     font-size: 16px;
 }
 
-/* Chat Area Layout */
 .chat-area {
     flex-grow: 1;
     padding: 20px 0;
@@ -381,7 +380,7 @@ body {
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 30px; /* Reduced padding from 30px to 20px on desktop for consistency */
     display: flex;
     flex-direction: column;
 }
@@ -399,14 +398,13 @@ body {
     margin-bottom: 15px;
 }
 
-/* Chat Input Container */
 .chat-input-container {
     padding: 15px 30px;
     border-top: 1px solid var(--border-color);
     background-color: var(--sidebar-bg);
     display: flex;
     flex-direction: column;
-    flex-shrink: 0; /* Prevent input area from shrinking */
+    flex-shrink: 0;
 }
 
 .input-wrapper {
@@ -415,9 +413,8 @@ body {
     gap: 10px;
     position: relative;
     width: 100%;
-    max-width: 800px; /* Match chat content width */
-    margin: 0 auto; /* Center it */
-    box-sizing: border-box;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .add-attachment-btn, .send-btn, .mic-btn {
@@ -507,7 +504,6 @@ body {
     font-size: 16px;
     resize: none;
     overflow-y: auto;
-    box-sizing: border-box;
     transition: box-shadow 0.2s ease;
 }
 
@@ -516,8 +512,6 @@ body {
     box-shadow: 0 0 0 2px var(--primary-color);
 }
 
-
-/* Chat message styling */
 .user-message, .ai-message {
     margin-bottom: 15px;
     line-height: 1.6;
@@ -643,8 +637,6 @@ body {
     transform: scale(0.95);
 }
 
-
-/* Universal Content Formatting Styles */
 .formatted-content-container {
     background-color: var(--user-message-bg);
     border: 1px solid var(--border-color);
@@ -652,7 +644,6 @@ body {
     overflow: hidden;
     margin: 0.5em 0;
     width: 100%;
-    box-sizing: border-box;
 }
 
 .formatted-content-container .content-text {
@@ -713,8 +704,6 @@ body {
     white-space: pre;
 }
 
-
-/* Scrollbar Styling */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-dark); }
 ::-webkit-scrollbar-thumb {
@@ -724,7 +713,6 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--text-light); }
 
-/* Thinking Indicator */
 .thinking-indicator {
     display: flex;
     align-items: center;
@@ -748,8 +736,6 @@ body {
   40% { transform: scale(1); }
 }
 
-
-/* --- Animations --- */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -769,11 +755,10 @@ body {
 
 /*
 ============================================================
-    NEW: RESPONSIVE DESIGN FOR MOBILE & TABLETS
+    RESPONSIVE DESIGN FOR MOBILE & TABLETS (FIXED SPACING)
 ============================================================
 */
 @media (max-width: 768px) {
-    /* Make sidebar an overlay that slides in from the left */
     .sidebar {
         position: fixed;
         left: 0;
@@ -782,36 +767,38 @@ body {
         z-index: 1000;
         transform: translateX(-100%);
         border-right: 1px solid var(--border-color);
-        /* Make sidebar slightly wider on mobile for better touch experience */
         width: 280px; 
     }
 
-    /* 'open' class will be toggled by JavaScript to show the sidebar */
     .sidebar.open {
         transform: translateX(0);
         box-shadow: 5px 0 15px rgba(0,0,0,0.5);
     }
 
-    /* Hide the desktop collapse button and show the mobile one */
     .collapse-btn {
         display: none;
     }
     .mobile-menu-btn {
-        display: block; /* Show the mobile menu button */
+        display: block;
     }
 
-    /* Main chat area adjustments */
+    /* --- FIXED: Reduced padding to prevent content from being cut off --- */
     .chat-header, .chat-input-container {
-        padding: 10px 15px; /* Reduce padding on mobile */
+        padding: 10px 15px;
     }
 
     .chat-area-content {
-        padding: 0 15px; /* Reduce padding */
+        padding: 0 15px;
     }
 
-    /* Adjust fonts and inputs for smaller screens */
+    .input-wrapper {
+        max-width: 100%; /* Ensure input wrapper is fluid */
+    }
+
+    /* --- FIXED: Adjusted font and spacing for better mobile readability --- */
     .welcome-message h1 {
-        font-size: 28px;
+        font-size: 26px;
+        margin-bottom: 10px;
     }
     .user-profile .user-name {
         font-size: 14px;
@@ -819,12 +806,18 @@ body {
     #user-input {
         font-size: 15px;
     }
-    
-    /* Make the model name smaller to fit header */
+    .model-selector {
+        font-size: 14px;
+    }
     #current-model-name {
-        max-width: 120px;
+        max-width: 110px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    
+    /* --- FIXED: Reduced padding on message bubbles --- */
+    .user-message {
+        padding: 10px 15px;
     }
 }
