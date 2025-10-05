@@ -1,4 +1,4 @@
-// script.js (Final corrected logic for conditional bubbles)
+// script.js (Final, Strict Logic for Conditional Bubbles)
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Element Selections ---
@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <h1>Good morning, Syntax jojohn</h1>
         </div>`;
     
-    // --- Helper function to reset the input area UI ---
     function resetInputUI() {
         userInput.disabled = false;
         sendBtn.classList.remove('stop-btn');
@@ -53,13 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.focus();
     }
 
-    // --- Sidebar Collapse Logic ---
+    // --- Sidebar and Model Selector Logic (unchanged) ---
     function initializeSidebarCollapse() {
         const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
         if (isCollapsed) {
             sidebar.classList.add('sidebar-collapsed');
         }
-
         collapseBtn.addEventListener('click', () => {
             sidebar.classList.toggle('sidebar-collapsed');
             const isNowCollapsed = sidebar.classList.contains('sidebar-collapsed');
@@ -67,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Model Selector Logic ---
     function initializeModelSelector() {
         modelList.innerHTML = '';
         availableModels.forEach(model => {
@@ -76,21 +73,17 @@ document.addEventListener('DOMContentLoaded', () => {
             li.dataset.model = model;
             modelList.appendChild(li);
         });
-
         const savedModel = localStorage.getItem('jomer-chat-model') || selectedModel;
         updateModel(savedModel);
-
         currentModelDisplay.addEventListener('click', () => {
             modelSelector.classList.toggle('open');
         });
-
         modelList.addEventListener('click', (e) => {
             if (e.target.tagName === 'LI') {
                 updateModel(e.target.dataset.model);
                 modelSelector.classList.remove('open');
             }
         });
-
         document.addEventListener('click', (e) => {
             if (!modelSelector.contains(e.target)) {
                 modelSelector.classList.remove('open');
@@ -104,8 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('jomer-chat-model', modelName);
     }
 
-
-    // --- Chat History Management ---
+    // --- Chat History Logic (unchanged) ---
     function saveChats() {
         localStorage.setItem('jomer-chats', JSON.stringify(chats));
     }
@@ -382,30 +374,12 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (e) => {
                 displayMessage('user', e.target.result);
                 addMessageToActiveChat('user', e.target.result);
-                setTimeout(() => {
-                    const thinkingBubble = displayThinkingMessage();
-                    setTimeout(() => {
-                        const aiResponse = `I've received the image: ${file.name}`;
-                        thinkingBubble.remove(); 
-                        displayMessage('ai', aiResponse); 
-                        addMessageToActiveChat('ai', aiResponse);
-                    }, 500);
-                }, 1000);
             };
             reader.readAsDataURL(file);
         } else {
             const fileInfo = `[File]${file.name}`;
             displayMessage('user', fileInfo);
             addMessageToActiveChat('user', fileInfo);
-            setTimeout(() => {
-                 const thinkingBubble = displayThinkingMessage();
-                 setTimeout(() => {
-                    const aiResponse = `I've received the file: ${file.name}`;
-                    thinkingBubble.remove(); 
-                    displayMessage('ai', aiResponse); 
-                    addMessageToActiveChat('ai', aiResponse);
-                 }, 500);
-            }, 1000);
         }
         event.target.value = '';
     });
@@ -445,7 +419,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
-                throw new Error(`API error (${response.status}): ${response.statusText}`);
+                const errorData = await response.json().catch(() => null);
+                const errorMessage = errorData?.error?.message || response.statusText;
+                throw new Error(`API error (${response.status}): ${errorMessage}`);
             }
 
             const reader = response.body.getReader();
@@ -482,6 +458,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             if (error.name === 'AbortError') {
                 console.log('Stream stopped by user.');
+                if (!fullResponse) {
+                    thinkingBubble.remove();
+                    resetInputUI();
+                    return;
+                }
             } else {
                 console.error('Error sending message to API:', error);
                 fullResponse = `Sorry, I ran into a problem: ${error.message}`;
